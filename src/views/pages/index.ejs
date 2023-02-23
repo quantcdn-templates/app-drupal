@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head'); %>
+  </head>
+  <body class="container">
+    <header>
+      <%- include('../partials/header'); %>
+    </header>
+    <main>
+      <div class="jumbotron">
+        <h2>This app is deployed dynamically, adjusting exact location according to traffic.</h2>
+        <h4>Your traffic is being routed to the following location:</h4>
+        <ul>
+          <li><b>City</b>: <%= city %></li>
+          <li><b>Region</b>: <%= region %></li>
+          <li><b>Country</b>: <%= country %></li>
+        </ul>
+      </div>
+    </main>
+    <footer>
+      <%- include('../partials/footer'); %>
+    </footer>
+  </body>
+</html>

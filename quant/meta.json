@@ -1,0 +1,10 @@
+[{
+    "title": "Node Express",
+    "url": "/deploy/step-one?template=app-node-express",
+    "summary": "Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.",
+    "content": "With a myriad of HTTP utility methods and middleware at your disposal, creating a robust API is quick and easy. Express provides a thin layer of fundamental web application features, without obscuring Node.js features that you know and love.",
+    "image": "https://raw.githubusercontent.com/quantcdn-templates/app-node-express/master/quant/screenshot.png",
+    "categories": ["node.js", "express"],
+    "tags": [],
+    "template_type": "app"
+}]
