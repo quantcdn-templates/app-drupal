@@ -6,12 +6,12 @@ metadata:
     name: ingress-upstream
 spec:
     ports:
-    - name: 80-3000
+    - name: 80-80
       port: 80
       protocol: TCP
-      targetPort: 3000
+      targetPort: 80
     selector:
-        app: node-express
+        app: drupal
     sessionAffinity: None
     type: ClusterIP
 status:

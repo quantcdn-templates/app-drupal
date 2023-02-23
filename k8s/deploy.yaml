@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node-express
+  name: drupal
   labels:
-    app: node-express
+    app: drupal
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: node-express
+      app: drupal
   template:
     metadata:
       labels:
-        app: node-express
+        app: drupal
     spec:
       containers:
-      - name: node-express
+      - name: drupal
         image: ${IMAGE_NAME}:${IMAGE_TAG}
         imagePullPolicy: Always
         resources:
