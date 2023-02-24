@@ -18,6 +18,12 @@ spec:
       - name: drupal
         image: ${IMAGE_NAME}:${IMAGE_TAG}
         imagePullPolicy: Always
+        envFrom:
+            - configMapRef:
+                name: drupal-configmap
+        volumeMounts:
+          - name: drupal-data
+            mountPath: /opt/drupal/web/sites/default/files
         resources:
           requests:
             memory: "200Mi"
@@ -29,3 +35,7 @@ spec:
         - containerPort: 80
       imagePullSecrets:
         - name: quant-cloud
+  volumes:
+    - name: drupal-data
+      persistentVolumeClaim:
+        claimName: drupal-pvc

@@ -10,7 +10,11 @@ main() {
   setCluster
 
   kubectl create secret docker-registry quant-cloud --docker-server=$CONTAINER_REGISTRY_URL --docker-username=$CONTAINER_REGISTRY_USER --docker-password=$CONTAINER_REGISTRY_TOKEN || true
+  
+  cat ../k8s/pvc.yaml| envsubst "$(env | cut -d= -f1 | sed -e 's/^/$/')" | kubectl apply -f -
+  cat ../k8s/config-map.yaml| envsubst "$(env | cut -d= -f1 | sed -e 's/^/$/')" | kubectl apply -f -
   cat ../k8s/deploy.yaml| envsubst "$(env | cut -d= -f1 | sed -e 's/^/$/')" | kubectl apply -f -
+
   kubectl apply -f ../k8s/ingress-upstream.yaml
   kubectl rollout restart deployment node-express
 }
