@@ -16,7 +16,7 @@ main() {
   cat ../k8s/deploy.yaml| envsubst "$(env | cut -d= -f1 | sed -e 's/^/$/')" | kubectl apply -f -
 
   kubectl apply -f ../k8s/ingress-upstream.yaml
-  kubectl rollout restart deployment node-express
+  kubectl rollout restart deployment drupal
 }
 
 setCluster() {
