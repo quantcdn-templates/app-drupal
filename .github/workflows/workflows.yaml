@@ -41,6 +41,12 @@ jobs:
           CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
           CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
           CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+          MARIADB_USER: ${{ secrets.MARIADB_USER }}
+          MARIADB_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
+          MARIADB_DATABASE: ${{ secrets.MARIADB_DATABASE }}
+          MARIADB_HOST: ${{ secrets.MARIADB_HOST }}
+          MARIADB_PORT: ${{ secrets.MARIADB_PORT }}
+          MARIADB_PREFIX: ''
           DEBUG: 1
         run: |
           ./ci/deploy.sh main
