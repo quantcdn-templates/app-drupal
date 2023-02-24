@@ -20,7 +20,7 @@ spec:
         imagePullPolicy: Always
         envFrom:
             - configMapRef:
-                name: drupal-configmap
+                name: drupal-config
         volumeMounts:
           - name: drupal-data
             mountPath: /opt/drupal/web/sites/default/files
