@@ -1,8 +1,8 @@
-# Node Express QuantCDN starter template
+# Drupal QuantCDN starter template
 
 ![Template screenshot](quant/screenshot.png?raw=true)
 
-This template provides everything you need to get started with [Express](https://expressjs.com/) on QuantCDN.
+This template provides everything you need to get started with [Drupal](https://www.drupal.com/) on QuantCDN.
 
 Click the "Deploy to Quant" button to create a new repo, QuantCDN project, and deployment pipelines.
 
@@ -12,13 +12,13 @@ Click the "Deploy to Quant" button to create a new repo, QuantCDN project, and d
 ### Installation
 
 ```
-$ npm i
+@todo
 ```
 
 ### Build & test locally
 
 ```
-$ npm run dev
+@todo
 ```
 
 ### Build & test in docker container

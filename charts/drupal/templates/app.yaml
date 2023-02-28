@@ -42,22 +42,22 @@ spec:
             - name: {{ .Values.images.drupal.name }}
               containerPort: {{ .Values.images.drupal.port }}
               protocol: TCP
-          readinessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 2
-            periodSeconds: 10
-            successThreshold: 1
-            tcpSocket:
-              port: {{ .Values.images.drupal.port }}
-            timeoutSeconds: 1
-          livenessProbe:
-            failureThreshold: 3
-            initialDelaySeconds: 2
-            periodSeconds: 10
-            successThreshold: 1
-            tcpSocket:
-              port: {{ .Values.images.drupal.port }}
-            timeoutSeconds: 1
+          # readinessProbe:
+          #   failureThreshold: 3
+          #   initialDelaySeconds: 2
+          #   periodSeconds: 10
+          #   successThreshold: 1
+          #   tcpSocket:
+          #     port: {{ .Values.images.drupal.port }}
+          #   timeoutSeconds: 1
+          # livenessProbe:
+          #   failureThreshold: 3
+          #   initialDelaySeconds: 2
+          #   periodSeconds: 10
+          #   successThreshold: 1
+          #   tcpSocket:
+          #     port: {{ .Values.images.drupal.port }}
+          #   timeoutSeconds: 1
           envFrom:
             - configMapRef:
                 name: drupal-config
