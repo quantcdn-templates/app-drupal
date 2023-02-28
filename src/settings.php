@@ -719,6 +719,8 @@ $settings['trusted_host_patterns'] = [
   '\.apps\.quant\.cloud$',
 ];
 
+$options['uri'] = 'https://drupal9-demo.apps.quant.cloud';
+
 /**
  * The default list of directories that will be ignored by Drupal's file API.
  *
