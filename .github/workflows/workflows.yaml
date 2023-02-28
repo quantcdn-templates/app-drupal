@@ -50,7 +50,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
         with:
           command: |
-            helm upgrade --dry-run --install drupal \
+            helm upgrade --install drupal \
               charts/drupal \
               --set appVersion="${{ github.sha }}" \
               --set images.drupal.repository="${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
