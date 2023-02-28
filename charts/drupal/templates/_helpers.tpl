@@ -30,5 +30,5 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create an image pull secret
 */}}
 {{- define "quant.imagePullSecretValue" }}
-{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imagePullSecret.registry (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.secrets.registry.registry (printf "%s:%s" .Values.secrets.registry.user .Values.secrets.registry.token | b64enc) | b64enc }}
 {{- end }}
