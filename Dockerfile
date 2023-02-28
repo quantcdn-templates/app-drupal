@@ -17,6 +17,7 @@ RUN set -eux; \
 		libpq-dev \
 		libwebp-dev \
 		libzip-dev \
+    default-mysql-client \
 	; \
 	\
 	docker-php-ext-configure gd \
