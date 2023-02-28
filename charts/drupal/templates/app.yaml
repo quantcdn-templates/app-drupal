@@ -10,7 +10,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "drupal.selectorLabels" . | nindent 6 }}
+      {{- include "quant.selectorLabels" . | nindent 6 }}
       app: drupal
   template:
     metadata:
@@ -19,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "drupal.selectorLabels" . | nindent 8 }}
+        {{- include "quant.selectorLabels" . | nindent 8 }}
         app: {{ .Values.images.drupal.name }}
         version: {{ .Values.appVersion }}
     spec:
