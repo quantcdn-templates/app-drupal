@@ -46,7 +46,6 @@ jobs:
           MARIADB_DATABASE: ${{ secrets.MARIADB_DATABASE }}
           MARIADB_HOST: ${{ secrets.MARIADB_HOST }}
           MARIADB_PORT: ${{ secrets.MARIADB_PORT }}
-          MARIADB_PREFIX: ''
           DEBUG: 1
         run: |
           ./ci/deploy.sh main
