@@ -38,11 +38,13 @@ jobs:
           password: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy Helm chart
         uses: koslibpro/helm-eks-action@master
