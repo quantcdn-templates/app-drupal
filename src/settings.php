@@ -96,7 +96,7 @@ $databases['default']['default'] = [
     'host' => getenv('MARIADB_HOST'),
     'port' => getenv('MARIADB_PORT') ?: 3306,
     'driver' => 'mysql',
-    'prefix' => getenv('MARIADB_PREFIX'),
+    'prefix' => getenv('MARIADB_PREFIX') ?: '',
     'collation' => 'utf8mb4_general_ci',
 ];
 
