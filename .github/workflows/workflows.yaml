@@ -53,7 +53,8 @@ jobs:
             helm upgrade --install drupal \
               charts/drupal \
               --set appVersion="${{ github.sha }}" \
-              --set images.drupal.repository="${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
+              --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
+              --set images.drupal.tag="${{ env.IMAGE_TAG }}" \
               --set secrets.registry.user="${{ secrets.CONTAINER_REGISTRY_USER }}" \
               --set secrets.registry.token="${{ secrets.CONTAINER_REGISTRY_TOKEN }}" \
               --set secrets.database.username="${{ secrets.MARIADB_USER }}" \
