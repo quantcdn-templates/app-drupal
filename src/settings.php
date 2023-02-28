@@ -91,7 +91,7 @@
 $databases = [];
 $databases['default']['default'] = [
     'database' => getenv('MARIADB_DATABASE'),
-    'username' => getenv('MARIADB_USERNAME'),
+    'username' => getenv('MARIADB_USER'),
     'password' => getenv('MARIADB_PASSWORD'),
     'host' => getenv('MARIADB_HOST'),
     'port' => getenv('MARIADB_PORT') ?: 3306,
