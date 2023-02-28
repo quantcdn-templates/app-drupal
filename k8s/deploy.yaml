@@ -26,11 +26,11 @@ spec:
             mountPath: /opt/drupal/web/sites/default/files
         resources:
           requests:
-            memory: "200Mi"
+            memory: "400Mi"
             cpu: "200m"
           limits:
-            memory: "1024Mi"
-            cpu: "1000m"
+            memory: "400Mi"
+            cpu: "200m"
         ports:
         - containerPort: 80
       imagePullSecrets:
