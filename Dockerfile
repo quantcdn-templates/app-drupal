@@ -17,7 +17,6 @@ RUN set -eux; \
 		libpq-dev \
 		libwebp-dev \
 		libzip-dev \
-    default-mysql-client \
 	; \
 	\
 	docker-php-ext-configure gd \
@@ -45,8 +44,13 @@ RUN set -eux; \
 		| sort -u \
 		| xargs -rt apt-mark manual; \
 	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false;
+
+# install the mysql client
+RUN apt-get install -y --no-install-recommends default-mysql-client
+
+# remove apt caches
+RUN rm -rf /var/lib/apt/lists/*
 
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
