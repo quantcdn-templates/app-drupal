@@ -2,7 +2,7 @@ name: Deploy to Quant Cloud
 
 on:
   push:
-    branches: [master]
+    branches: [master, develop]
 
 env:
   REGISTRY: ${{ secrets.CONTAINER_REGISTRY_URL }}
@@ -34,18 +34,45 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      - name: Deploy on Section
+      - name: Setup kubeconfig
         env:
           SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
           SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
-          CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
-          CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
-          CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
-          MARIADB_USER: ${{ secrets.MARIADB_USER }}
-          MARIADB_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
-          MARIADB_DATABASE: ${{ secrets.MARIADB_DATABASE }}
-          MARIADB_HOST: ${{ secrets.MARIADB_HOST }}
-          MARIADB_PORT: ${{ secrets.MARIADB_PORT }}
-          DEBUG: 1
         run: |
-          ./ci/deploy.sh main
+          ./scripts/init-kube.sh
+          echo "KUBE_CONFIG_DATA=$(cat ~/.kube/config | base64)" >> $GITHUB_ENV
+
+      - name: Deploy Helm chart
+        uses: koslibpro/helm-eks-action@master
+        env:
+          KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
+        with:
+          command: |
+            helm upgrade --install drupal \
+              charts/drupal \
+              --set appVersion="${{ github.sha }}" \
+              --set images.drupal.repository="${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
+              --set secrets.registry.user="${{ secrets.CONTAINER_REGISTRY_USER }}" \
+              --set secrets.registry.token="${{ secrets.CONTAINER_REGISTRY_TOKEN }}" \
+              --set secrets.database.username="${{ secrets.MARIADB_USER }}" \
+              --set secrets.database.password="${{ secrets.MARIADB_PASSWORD }}" \
+              --set secrets.database.database="${{ secrets.MARIADB_DATABASE }}" \
+              --set secrets.database.host="${{ secrets.MARIADB_HOST }}" \
+              --set secrets.database.port="${{ secrets.MARIADB_PORT }}"
+
+
+      # - name: Deploy on Section
+      #   env:
+      #     SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
+      #     SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
+      #     CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
+      #     CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
+      #     CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+      #     MARIADB_USER: ${{ secrets.MARIADB_USER }}
+      #     MARIADB_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
+      #     MARIADB_DATABASE: ${{ secrets.MARIADB_DATABASE }}
+      #     MARIADB_HOST: ${{ secrets.MARIADB_HOST }}
+      #     MARIADB_PORT: ${{ secrets.MARIADB_PORT }}
+      #     DEBUG: 1
+      #   run: |
+      #     ./ci/deploy.sh main
