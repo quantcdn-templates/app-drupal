@@ -66,7 +66,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 WORKDIR /opt/drupal
 
 COPY src /opt/drupal/
-COPY deployment-scripts /opt/deployment-scripts;
+COPY deployment-scripts /opt/deployment-scripts
+
 RUN chmod +x /opt/deployment-scripts/*
 
 RUN set -eux; \
