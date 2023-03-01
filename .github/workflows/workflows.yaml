@@ -68,6 +68,12 @@ jobs:
               --set secrets.database.host="${{ secrets.MARIADB_HOST }}" \
               --set secrets.database.port="${{ secrets.MARIADB_PORT }}"
 
+      - name: Monitor the deployment and run post-deploy
+        env:
+          KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
+        with:
+          command: |
+            ./ci/run-post-deploy.sh
 
       # - name: Deploy on Section
       #   env:
