@@ -77,7 +77,7 @@ jobs:
           KUBECONFIG: # Unset
         run:
           kubectl version
-          kubectl get events # --sort-by='{.lastTimestamp}'
+          kubectl get events
           kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
         if: success() || failure()
 
