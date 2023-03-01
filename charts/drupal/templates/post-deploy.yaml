@@ -18,10 +18,6 @@
 #     spec:
 #       imagePullSecrets:
 #         - name: quant-cloud
-#       volumes:
-#         - name: drupal-data
-#           persistentVolumeClaim:
-#             claimName: drupal-pvc
 #       initContainers:
 #         - name: run-post-deploy
 #           image: "{{ .Values.images.drupal.repository }}:{{ .Values.images.drupal.tag }}"
@@ -30,6 +26,3 @@
 #           envFrom:
 #             - configMapRef:
 #                 name: drupal-config
-#           volumeMounts:
-#             - name: drupal-data
-#               mountPath: /opt/drupal/web/sites/default/files

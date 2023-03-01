@@ -26,12 +26,5 @@
 #             envFrom:
 #               - configMapRef:
 #                   name: drupal-config
-#             volumeMounts:
-#               - name: drupal-data
-#                 mountPath: /opt/drupal/web/sites/default/files
 #           imagePullSecrets:
 #             - name: quant-cloud
-#           volumes:
-#             - name: drupal-data
-#               persistentVolumeClaim:
-#                 claimName: drupal-pvc

@@ -35,7 +35,3 @@ spec:
         - containerPort: 80
       imagePullSecrets:
         - name: quant-cloud
-      volumes:
-        - name: drupal-data
-          persistentVolumeClaim:
-            claimName: drupal-pvc
