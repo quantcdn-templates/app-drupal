@@ -59,7 +59,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
         with:
           command: |
-            helm upgrade --install --wait drupal \
+            helm upgrade --install drupal \
               charts/drupal \
               --set appVersion="${{ github.sha }}" \
               --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
@@ -75,24 +75,9 @@ jobs:
       - name: Run the post-deployment script
         env:
           KUBECONFIG: # Unset
-        run:
+        run: |
           kubectl version
           kubectl get events
+          sleep 300
           kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
         if: success() || failure()
-
-      # - name: Deploy on Section
-      #   env:
-      #     SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
-      #     SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
-      #     CONTAINER_REGISTRY_URL: ${{ secrets.CONTAINER_REGISTRY_URL }}
-      #     CONTAINER_REGISTRY_USER: ${{ secrets.CONTAINER_REGISTRY_USER }}
-      #     CONTAINER_REGISTRY_TOKEN: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
-      #     MARIADB_USER: ${{ secrets.MARIADB_USER }}
-      #     MARIADB_PASSWORD: ${{ secrets.MARIADB_PASSWORD }}
-      #     MARIADB_DATABASE: ${{ secrets.MARIADB_DATABASE }}
-      #     MARIADB_HOST: ${{ secrets.MARIADB_HOST }}
-      #     MARIADB_PORT: ${{ secrets.MARIADB_PORT }}
-      #     DEBUG: 1
-      #   run: |
-      #     ./ci/deploy.sh main
