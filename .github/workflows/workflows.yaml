@@ -59,7 +59,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
         with:
           command: |
-            helm upgrade --install --wait --timeout 600s drupal \
+            helm upgrade --install --wait drupal \
               charts/drupal \
               --set appVersion="${{ github.sha }}" \
               --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
@@ -72,11 +72,13 @@ jobs:
               --set secrets.database.host="${{ secrets.MARIADB_HOST }}" \
               --set secrets.database.port="${{ secrets.MARIADB_PORT }}"
 
-      - name: Monitor the deployment and run post-deploy
+      - name: Run the post-deployment script
         env:
-          KUBECONFIG:
+          KUBECONFIG: # Unset
         run:
-          ./ci/run-post-deploy.sh
+          kubectl -n drupal get events --sort-by='{.lastTimestamp}'
+          kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
+        if: success() || failure()
 
       # - name: Deploy on Section
       #   env:
