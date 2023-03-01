@@ -1,37 +1,37 @@
-apiVersion: batch/v1beta1
-kind: CronJob
-metadata:
-  name: drupal-cron
-  labels:
-    app: {{ .Values.images.drupal.name }}
-    version: {{ .Values.appVersion }}
-spec:
-  schedule: '"30 10 * * *"'
-  successfulJobsHistoryLimit: 0 
-  jobTemplate:
-    spec:
-      template:
-        spec:       
-          containers:
-          - name: drupal-cron
-            image: "{{ .Values.images.drupal.repository }}:{{ .Values.images.drupal.tag }}"
-            imagePullPolicy: "IfNotPresent"
-            args:
-              - sh
-              - -c
-              - |
-                sleep 2 
-                "/opt/deployment-scripts/post-deploy.sh"
-                sleep 30
-            envFrom:
-              - configMapRef:
-                  name: drupal-config
-            volumeMounts:
-              - name: drupal-data
-                mountPath: /opt/drupal/web/sites/default/files
-          imagePullSecrets:
-            - name: quant-cloud
-          volumes:
-            - name: drupal-data
-              persistentVolumeClaim:
-                claimName: drupal-pvc
+# apiVersion: batch/v1beta1
+# kind: CronJob
+# metadata:
+#   name: drupal-cron
+#   labels:
+#     app: {{ .Values.images.drupal.name }}
+#     version: {{ .Values.appVersion }}
+# spec:
+#   schedule: '"30 10 * * *"'
+#   successfulJobsHistoryLimit: 0 
+#   jobTemplate:
+#     spec:
+#       template:
+#         spec:       
+#           containers:
+#           - name: drupal-cron
+#             image: "{{ .Values.images.drupal.repository }}:{{ .Values.images.drupal.tag }}"
+#             imagePullPolicy: "IfNotPresent"
+#             args:
+#               - sh
+#               - -c
+#               - |
+#                 sleep 2 
+#                 "/opt/deployment-scripts/post-deploy.sh"
+#                 sleep 30
+#             envFrom:
+#               - configMapRef:
+#                   name: drupal-config
+#             volumeMounts:
+#               - name: drupal-data
+#                 mountPath: /opt/drupal/web/sites/default/files
+#           imagePullSecrets:
+#             - name: quant-cloud
+#           volumes:
+#             - name: drupal-data
+#               persistentVolumeClaim:
+#                 claimName: drupal-pvc
