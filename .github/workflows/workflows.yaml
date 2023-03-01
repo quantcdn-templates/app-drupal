@@ -59,7 +59,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
         with:
           command: |
-            helm upgrade --install --wait --timeout 600 drupal \
+            helm upgrade --install --wait --timeout 600s drupal \
               charts/drupal \
               --set appVersion="${{ github.sha }}" \
               --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
