@@ -74,6 +74,7 @@ jobs:
 
       - name: Monitor the deployment and run post-deploy
         run:
+          ./ci/init-kube.sh
           ./ci/run-post-deploy.sh
 
       # - name: Deploy on Section
