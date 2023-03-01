@@ -71,9 +71,8 @@ jobs:
       - name: Monitor the deployment and run post-deploy
         env:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
-        with:
-          command: |
-            ./ci/run-post-deploy.sh
+        run:
+          ./ci/run-post-deploy.sh
 
       # - name: Deploy on Section
       #   env:
