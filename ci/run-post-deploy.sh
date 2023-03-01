@@ -4,7 +4,7 @@
 kubectl rollout status deploy/drupal --watch=true
 
 # Wait for shutdown of terminating pods..
-SELECTOR=$(kubectl get deploy/my-deployment-name -o wide --no-headers | awk '{print \$NF}')
+SELECTOR=$(kubectl get deploy/drupal -o wide --no-headers | awk '{print \$NF}')
 
 while :
 do
