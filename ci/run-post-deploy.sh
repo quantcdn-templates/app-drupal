@@ -16,4 +16,4 @@ do
     sleep 5
 done
 
-kubectl exec deploy/drupal -- echo "Call your script here.."
+kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
