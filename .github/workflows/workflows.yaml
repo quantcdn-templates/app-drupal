@@ -74,7 +74,7 @@ jobs:
 
       - name: Monitor the deployment and run post-deploy
         env:
-          KUBECONFIG: "~/.kube/config"
+          KUBECONFIG:
         run:
           ./ci/run-post-deploy.sh
 
