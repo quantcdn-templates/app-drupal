@@ -723,9 +723,10 @@ $_SERVER['HTTPS'] = 'on';
 $settings['reverse_proxy'] = TRUE;
 $settings['reverse_proxy_host_header'] = 'HTTP_X_QUANT_FORWARDED_HOST';
 
-if (PHP_SAPI !== 'cli' && (empty($_SERVER['HTTP_X_QUANT_TOKEN']) || $_SERVER['HTTP_X_QUANT_TOKEN'] != '3b06664e-7607-49a4-8c79-43fa5108cc58')) {
-  die("Not allowed.");
-}
+// Example of origin protection.
+// if (PHP_SAPI !== 'cli' && (empty($_SERVER['HTTP_X_QUANT_TOKEN']) || $_SERVER['HTTP_X_QUANT_TOKEN'] != '3b06664e-7607-49a4-8c79-43fa5108cc58')) {
+//   die("Not allowed.");
+// }
 
 /**
  * The default list of directories that will be ignored by Drupal's file API.

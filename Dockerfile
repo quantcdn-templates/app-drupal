@@ -47,7 +47,7 @@ RUN set -eux; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false;
 
 # install the mysql client
-RUN apt-get install -y --no-install-recommends default-mysql-client
+RUN apt-get install -y --no-install-recommends default-mysql-client vim
 
 # remove apt caches
 RUN rm -rf /var/lib/apt/lists/*
