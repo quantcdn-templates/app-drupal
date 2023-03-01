@@ -1,5 +1,8 @@
 FROM php:8.1-apache-bullseye
 
+# NOTE: This Dockerfile is taken from the official Drupal images.
+# https://github.com/docker-library/drupal/blob/6d83cf89d49b5da2608592197dcf5dcc1f233978/10.0/php8.1/apache-bullseye/Dockerfile
+
 # install the PHP extensions we need
 RUN set -eux; \
 	\

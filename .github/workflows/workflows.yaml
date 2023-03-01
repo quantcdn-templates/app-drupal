@@ -77,7 +77,6 @@ jobs:
           KUBECONFIG: # Unset
         run: |
           kubectl version
-          kubectl get events
           sleep 300
           kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
         if: success() || failure()
