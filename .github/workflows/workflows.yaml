@@ -73,8 +73,9 @@ jobs:
               --set secrets.database.port="${{ secrets.MARIADB_PORT }}"
 
       - name: Monitor the deployment and run post-deploy
+        env:
+          KUBECONFIG: "~/.kube/config"
         run:
-          ./ci/init-kube.sh
           ./ci/run-post-deploy.sh
 
       # - name: Deploy on Section
