@@ -15,11 +15,11 @@ images:
     port: 80
     resources:
       limits:
-        cpu: 200m
-        memory: 400Mi
+        cpu: 1000m
+        memory: 1024Mi
       requests:
-        cpu: 200m
-        memory: 400Mi
+        cpu: 1000m
+        memory: 1024Mi
 
 podAnnotations: {}
 
