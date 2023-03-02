@@ -27,6 +27,10 @@ spec:
         - name: quant-cloud
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: drupal-data
+          persistentVolumeClaim:
+            claimName: drupal-pvc
       containers:
         ### BEGIN DRUPAL CONTAINER
         - name: {{ .Values.images.drupal.name }}
@@ -57,7 +61,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: drupal-config
-
+          volumeMounts:
+            - name: drupal-data
+              mountPath: /opt/drupal/web/sites/default/files
           resources:
             {{- toYaml .Values.images.drupal.resources | nindent 12 }}
         ### END DRUPAL CONTAINER
