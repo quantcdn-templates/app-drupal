@@ -79,4 +79,3 @@ jobs:
           kubectl version
           sleep 300
           kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
-        if: success() || failure()
