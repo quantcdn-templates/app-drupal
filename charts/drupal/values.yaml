@@ -25,7 +25,6 @@ podAnnotations: {}
 
 # www-data.
 podSecurityContext:
-  runAsUser: 33
   fsGroup: 33
 
 securityContext: {}
