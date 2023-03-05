@@ -1,6 +1,7 @@
-namespace: default
-  labels:
-    app: drupal
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-service
 spec:
   type: LoadBalancer
   ports:
