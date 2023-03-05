@@ -44,7 +44,7 @@ jobs:
       - name: Use buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image to Quant Cloud
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -53,7 +53,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy Helm chart
+      - name: Deploy to Quant Cloud
         uses: koslibpro/helm-eks-action@master
         env:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
@@ -79,3 +79,11 @@ jobs:
           kubectl version
           sleep 300
           kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
+
+      - name: Clear the QuantCDN caches
+        uses: quantcdn/purge-action@v1.2.0
+        with:
+          customer: ${{ secrets.QUANT_CUSTOMER_ID }}
+          project: ${{ secrets.QUANT_PROJECT_ID }}
+          token: ${{ secrets.QUANT_TOKEN }}
+          url_pattern: "/*"
