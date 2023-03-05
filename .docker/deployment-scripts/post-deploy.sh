@@ -8,5 +8,4 @@ drush cr
 drush updb -y
 
 ## Configuration import example.
-drush cex -y
 #drush cim -y

@@ -719,14 +719,16 @@ $settings['trusted_host_patterns'] = [
   '\.apps\.quant\.cloud$',
 ];
 
-$_SERVER['HTTPS'] = 'on';
-$settings['reverse_proxy'] = TRUE;
-$settings['reverse_proxy_host_header'] = 'HTTP_X_QUANT_FORWARDED_HOST';
+$conf['reverse_proxy'] = TRUE;
 
-// Example of origin protection.
-// if (PHP_SAPI !== 'cli' && (empty($_SERVER['HTTP_X_QUANT_TOKEN']) || $_SERVER['HTTP_X_QUANT_TOKEN'] != '3b06664e-7607-49a4-8c79-43fa5108cc58')) {
-//   die("Not allowed.");
-// }
+// Direct application protection.
+// Must route via edge.
+$headers = getallheaders();
+if (PHP_SAPI !== 'cli' &&
+  ($_SERVER['REMOTE_ADDR'] != '127.0.0.1') &&
+  (empty($headers['X_QUANT_TOKEN']) || $headers['X_QUANT_TOKEN'] != 'f1e255ad-6d18-4926-9fca-ff8434f42743')) {
+  die("Not allowed.");
+}
 
 /**
  * The default list of directories that will be ignored by Drupal's file API.
