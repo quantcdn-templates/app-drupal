@@ -1,0 +1,15 @@
+namespace: default
+  labels:
+    app: drupal
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: {{ .Values.images.drupal.port }}
+    name: http
+  - port: 2222
+    targetPort: 22
+    name: ssh
+    protocol: TCP
+  selector:
+    app: drupal
