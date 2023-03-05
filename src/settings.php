@@ -719,7 +719,8 @@ $settings['trusted_host_patterns'] = [
   '\.apps\.quant\.cloud$',
 ];
 
-$conf['reverse_proxy'] = TRUE;
+$settings['reverse_proxy'] = TRUE;
+$settings['reverse_proxy_addresses'] = array($_SERVER['REMOTE_ADDR']);
 
 // Direct application protection.
 // Must route via edge.
