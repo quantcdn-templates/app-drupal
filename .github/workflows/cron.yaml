@@ -9,18 +9,22 @@ jobs:
   scheduled_tasks:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set environment for branch
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
+            echo "SECTION_K8S_API_URL=${{ secrets.SECTION_K8S_API_URL }}" >> "$GITHUB_ENV"
+            echo "SECTION_API_TOKEN=${{ secrets.SECTION_K8S_API_URL }}" >> "$GITHUB_ENV"
+          else
+            echo "** Cron schedule only runs on master branch"
+            exit 1
+          fi
       - name: Setup kubeconfig
-        env:
-          SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
-          SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
         run: |
           ./ci/init-kube.sh
-          echo 'KUBECONFIG<<EOF' >> $GITHUB_ENV
-          echo $(cat ~/.kube/config | base64) >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
 
-      - uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ env.KUBECONFIG }}
-        with:
-          args: exec deploy/drupal -- drush status
+      - name: Run the scheduled task
+        run: |
+          kubectl exec deploy/drupal -- /opt/deployment-scripts/cron.sh

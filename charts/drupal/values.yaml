@@ -23,9 +23,7 @@ images:
 
 podAnnotations: {}
 
-# www-data.
-podSecurityContext:
-  fsGroup: 33
+podSecurityContext: {}
 
 securityContext: {}
 
@@ -36,7 +34,7 @@ service:
 
 autoscaling:
   enabled: false
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 2
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
