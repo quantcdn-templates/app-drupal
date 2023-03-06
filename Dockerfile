@@ -31,7 +31,7 @@ RUN set -eux; \
 	\
 	docker-php-ext-install -j "$(nproc)" \
 		gd \
-		# opcache \
+		opcache \
 		pdo_mysql \
 		pdo_pgsql \
 		zip \
@@ -58,12 +58,12 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
-# RUN { \
-# 		echo 'opcache.memory_consumption=32'; \
-# 		echo 'opcache.interned_strings_buffer=8'; \
-# 		echo 'opcache.max_accelerated_files=1000'; \
-# 		echo 'opcache.revalidate_freq=60'; \
-# 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+RUN { \
+		echo 'opcache.memory_consumption=96'; \
+		echo 'opcache.interned_strings_buffer=8'; \
+		echo 'opcache.max_accelerated_files=4096'; \
+		echo 'opcache.revalidate_freq=60'; \
+	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 
