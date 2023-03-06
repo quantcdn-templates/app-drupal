@@ -17,4 +17,3 @@ kubectl config set-cluster quant-cloud \
 kubectl config set-credentials quant-cloud-user --token=$SECTION_API_TOKEN
 kubectl config set-context quant-cloud-app --cluster=quant-cloud --user=quant-cloud-user --namespace=default
 kubectl config use-context quant-cloud-app
-kubectl version
