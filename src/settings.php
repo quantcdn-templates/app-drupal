@@ -725,13 +725,13 @@ $settings['reverse_proxy_addresses'] = array($_SERVER['REMOTE_ADDR']);
 
 // Direct application protection.
 // Must route via edge.
-$headers = getallheaders();
-if (PHP_SAPI !== 'cli' &&
-  ($_SERVER['REMOTE_ADDR'] != '127.0.0.1') &&
-  ($_SERVER['SERVER_NAME'] != 'localhost') &&
-  (empty($headers['X_QUANT_TOKEN']) || $headers['X_QUANT_TOKEN'] != 'f1e255ad-6d18-4926-9fca-ff8434f42743')) {
-    die("Not allowed.");
-}
+// $headers = getallheaders();
+// if (PHP_SAPI !== 'cli' &&
+//   ($_SERVER['REMOTE_ADDR'] != '127.0.0.1') &&
+//   ($_SERVER['SERVER_NAME'] != 'localhost') &&
+//   (empty($headers['X_QUANT_TOKEN']) || $headers['X_QUANT_TOKEN'] != 'abc123')) {
+//     die("Not allowed.");
+// }
 
 /**
  * The default list of directories that will be ignored by Drupal's file API.
