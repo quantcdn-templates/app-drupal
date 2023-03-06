@@ -10,19 +10,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set environment for branch
-        run: |
-          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-            echo "SECTION_K8S_API_URL=${{ secrets.SECTION_K8S_API_URL_PROD }}" >> "$GITHUB_ENV"
-            echo "SECTION_API_TOKEN=${{ secrets.SECTION_API_TOKEN_PROD }}" >> "$GITHUB_ENV"
-          elif [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
-            echo "SECTION_K8S_API_URL=${{ secrets.SECTION_K8S_API_URL_STAGE }}" >> "$GITHUB_ENV"
-            echo "SECTION_API_TOKEN=${{ secrets.SECTION_API_TOKEN_STAGE }}" >> "$GITHUB_ENV"
-          else
-            echo "** CI pipelines are not configured for this branch"
-            exit 1
-          fi
       - name: Setup kubeconfig
+        env:
+          SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
+          SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
         run: |
           ./ci/init-kube.sh
 
