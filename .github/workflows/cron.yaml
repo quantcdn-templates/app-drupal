@@ -16,7 +16,7 @@ jobs:
         run: |
           if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
             echo "SECTION_K8S_API_URL=${{ secrets.SECTION_K8S_API_URL }}" >> "$GITHUB_ENV"
-            echo "SECTION_API_TOKEN=${{ secrets.secrets.SECTION_API_TOKEN }}" >> "$GITHUB_ENV"
+            echo "SECTION_API_TOKEN=${{ secrets.SECTION_API_TOKEN }}" >> "$GITHUB_ENV"
           else
             echo "** Cron schedule only runs on master branch"
             exit 1
