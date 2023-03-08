@@ -19,3 +19,7 @@ vendor/
 
 # Ignore the web folder, except custom themes and modules.
 web/*
+!web/modules
+!web/themes
+web/modules/contrib
+web/themes/contrib
