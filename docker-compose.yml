@@ -7,6 +7,7 @@ x-environment: &environment
     MARIADB_DATABASE: drupal
     MARIADB_HOST: mariadb
     MARIADB_ROOT_PASSWORD: drupal
+    QUANT_ENVIRONMENT_TYPE: local
 
 services:
   app:

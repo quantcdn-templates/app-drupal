@@ -720,8 +720,10 @@ $settings['trusted_host_patterns'] = [
   '\.apps\.quant\.cloud$',
 ];
 
-$settings['reverse_proxy'] = TRUE;
-$settings['reverse_proxy_addresses'] = array($_SERVER['REMOTE_ADDR']);
+if (!getenv('QUANT_ENVIRONMENT_TYPE') == 'local') {
+  $settings['reverse_proxy'] = TRUE;
+  $settings['reverse_proxy_addresses'] = array($_SERVER['REMOTE_ADDR']);
+}
 
 // Direct application protection.
 // Must route via edge.

@@ -18,7 +18,7 @@ docker-compose up
 
 The application will be available at `http://localhost:80`.
 
-To import a MySQL database run `docker-compose exec app drush sqlc < /path/to/database.sql`.
+To import a MySQL database run `docker-compose exec -T app drush sqlc < /path/to/database.sql`.
 
 Changes to the codebase in `src` will be reflected immediately.
 
