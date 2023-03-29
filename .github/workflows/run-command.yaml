@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  backup:
+  run-command:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,4 +25,4 @@ jobs:
         env:
           KUBECONFIG: # Unset
         run: |
-          kubectl exec deploy/drupal -- ${{ github.event.inputs.quant_project_name }}
+          kubectl exec deploy/drupal --container drupal -- ${{ github.event.inputs.command }}
