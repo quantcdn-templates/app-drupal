@@ -50,8 +50,13 @@ RUN set -eux; \
 	\
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false;
 
-# install the mysql client
-RUN apt-get install -y --no-install-recommends default-mysql-client vim
+# Install redis with pecl.
+RUN pecl install -o -f redis \
+	&&  rm -rf /tmp/pear \
+	&&  docker-php-ext-enable redis
+
+# install the mysql client and other required tools
+RUN apt-get install -y --no-install-recommends default-mysql-client vim ssmtp openssh-server git
 
 # remove apt caches
 RUN rm -rf /var/lib/apt/lists/*
@@ -59,11 +64,13 @@ RUN rm -rf /var/lib/apt/lists/*
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
-		echo 'opcache.memory_consumption=96'; \
+		echo 'opcache.memory_consumption=300'; \
 		echo 'opcache.interned_strings_buffer=8'; \
-		echo 'opcache.max_accelerated_files=4096'; \
+		echo 'opcache.max_accelerated_files=30000'; \
 		echo 'opcache.revalidate_freq=60'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+RUN echo 'memory_limit = 256M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini;
 
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 
@@ -72,6 +79,7 @@ WORKDIR /opt/drupal
 COPY src /opt/drupal/
 COPY .docker/deployment-scripts /opt/deployment-scripts
 COPY .docker/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+COPY .docker/quant/ /quant/
 
 RUN chmod +x /opt/deployment-scripts/*
 
@@ -80,10 +88,19 @@ RUN set -eux; \
 	composer install; \
 	chown -R www-data:www-data web/sites web/modules web/themes; \
 	rmdir /var/www/html; \
+	usermod -a -G www-data nobody; \
+	usermod -a -G root nobody; \
 	ln -sf /opt/drupal/web /var/www/html; \
 	# delete composer cache
 	rm -rf "$COMPOSER_HOME"
 
 ENV PATH=${PATH}:/opt/drupal/vendor/bin
+
+RUN mkdir -p /root/.ssh
+RUN mkdir -p /run/sshd
+EXPOSE 80 22
+
+ENTRYPOINT [ "/quant/entrypoints.sh", "docker-php-entrypoint" ]
+CMD ["apache2-foreground"]
 
 # vim:set ft=dockerfile:

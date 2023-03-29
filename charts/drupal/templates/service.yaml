@@ -7,10 +7,10 @@ metadata:
     app: ingress-upstream
 spec:
     ports:
-    - name: 80-{{ .Values.images.drupal.port }}
+    - name: 80-80
       port: 80
       protocol: TCP
-      targetPort: {{ .Values.images.drupal.port }}
+      targetPort: 80
     selector:
         app: drupal
     sessionAffinity: None

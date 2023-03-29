@@ -10,16 +10,32 @@ images:
   pullPolicy: Always
   drupal:
     name: drupal
+    sshname: drupal-ssh
     repository: registry.quant.cloud/org/repo
     tag: edge
     port: 80
+    sshport: 22
     resources:
       limits:
-        cpu: 2000m
-        memory: 2048Mi
+        cpu: 1500m
+        memory: 1548Mi
       requests:
-        cpu: 2000m
-        memory: 2048Mi
+        cpu: 1500m
+        memory: 1548Mi
+  redis:
+    enabled: true
+    name: redis
+    repository: redis
+    tag: latest
+    port: 6379
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+
 
 podAnnotations: {}
 
@@ -83,3 +99,13 @@ secrets:
     database:
     host: example.rds.amazonaws.com
     port: 3306
+  smtp:
+    host:
+    port:
+    username:
+    password:
+    from:
+    from_name:
+  redis:
+    host: localhost
+  authorized_keys:

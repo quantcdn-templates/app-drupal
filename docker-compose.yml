@@ -8,16 +8,22 @@ x-environment: &environment
     MARIADB_HOST: mariadb
     MARIADB_ROOT_PASSWORD: drupal
     QUANT_ENVIRONMENT_TYPE: local
+    APACHE_RUN_USER: nobody
 
 services:
   app:
     build: ./
     ports:
       - "80:80"
+      - "22"
     <<: *environment
     volumes:
       - ./src:/opt/drupal
 
   mariadb:
     image: mariadb:latest
+    <<: *environment
+
+  redis:
+    image: redis
     <<: *environment

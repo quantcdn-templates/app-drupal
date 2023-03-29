@@ -736,6 +736,11 @@ if (!getenv('QUANT_ENVIRONMENT_TYPE') == 'local') {
 // }
 
 /**
+ * Sets the cURL internal timeout.
+ */
+$settings['http_client_config']['timeout'] = 300;
+
+/**
  * The default list of directories that will be ignored by Drupal's file API.
  *
  * By default ignore node_modules and bower_components folders to avoid issues
@@ -842,3 +847,77 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 # if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
 #   include $app_root . '/' . $site_path . '/settings.local.php';
 # }
+
+/**
+ * Settings for Redis in Quant Cloud.
+ *
+ * This codebase ships with Redis by default, it is highly recommended
+ * it is enabled and active for optimal performance.
+ *
+ * Ensure the 'redis' module is enabled on your project.
+ */
+if (in_array(PHP_SAPI, array('cli', 'cli-server', 'phpdbg'))) {
+  ini_set('memory_limit', '512M');
+}
+
+$redis = new \Redis();
+$redis_host = getenv('REDIS_HOST') ?: 'redis';
+$redis_port = getenv('REDIS_SERVICE_PORT') ?: 6379;
+$redis_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: 2;
+
+try {
+  if (InstallerKernel::installationAttempted()) {
+    // Do not set the cache during installations of Drupal.
+    throw new \Exception('Drupal installation underway.');
+  }
+
+  $redis->connect($redis_host, $redis_port, $redis_timeout);
+  $response = $redis->ping();
+
+  if (!$response) {
+    throw new \Exception('Redis could be reached but is not responding correctly.');
+  }
+
+  $settings['redis.connection']['interface'] = 'PhpRedis';
+  $settings['redis.connection']['host'] = $redis_host;
+  $settings['redis.connection']['port'] = $redis_port;
+  $settings['cache_prefix']['default'] = '';
+
+  $settings['cache']['default'] = 'cache.backend.redis';
+  $settings['container_yamls'][] = 'modules/contrib/redis/example.services.yml';
+  $settings['container_yamls'][] = 'modules/contrib/redis/redis.services.yml';
+  $class_loader->addPsr4('Drupal\\redis\\', 'modules/contrib/redis/src');
+  $settings['bootstrap_container_definition'] = [
+    'parameters' => [],
+    'services' => [
+      'redis.factory' => [
+        'class' => 'Drupal\redis\ClientFactory',
+      ],
+      'cache.backend.redis' => [
+        'class' => 'Drupal\redis\Cache\CacheBackendFactory',
+        'arguments' => [
+          '@redis.factory',
+          '@cache_tags_provider.container',
+          '@serialization.phpserialize',
+        ],
+      ],
+      'cache.container' => [
+        'class' => '\Drupal\redis\Cache\PhpRedis',
+        'factory' => ['@cache.backend.redis', 'get'],
+        'arguments' => ['container'],
+      ],
+      'cache_tags_provider.container' => [
+        'class' => 'Drupal\redis\Cache\RedisCacheTagsChecksum',
+        'arguments' => ['@redis.factory'],
+      ],
+      'serialization.phpserialize' => [
+        'class' => 'Drupal\Component\Serialization\PhpSerialize',
+      ],
+    ],
+  ];
+}
+catch (\Exception $e) {
+  // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis.UndefinedVariable
+  $settings['container_yamls'][] = "sites/default/redis-unavailable.services.yml";
+  $settings['cache']['default'] = 'cache.backend.null';
+}

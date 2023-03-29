@@ -28,6 +28,10 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        - name: authorized-keys
+          configMap:
+            name: authorized-keys
+            defaultMode: 384
         - name: drupal-data
           persistentVolumeClaim:
             claimName: drupal-pvc
@@ -42,32 +46,73 @@ spec:
             - name: {{ .Values.images.drupal.name }}
               containerPort: {{ .Values.images.drupal.port }}
               protocol: TCP
-          # readinessProbe:
-          #   failureThreshold: 3
-          #   initialDelaySeconds: 2
-          #   periodSeconds: 10
-          #   successThreshold: 1
-          #   tcpSocket:
-          #     port: {{ .Values.images.drupal.port }}
-          #   timeoutSeconds: 1
-          # livenessProbe:
-          #   failureThreshold: 3
-          #   initialDelaySeconds: 2
-          #   periodSeconds: 10
-          #   successThreshold: 1
-          #   tcpSocket:
-          #     port: {{ .Values.images.drupal.port }}
-          #   timeoutSeconds: 1
+            - name: {{ .Values.images.drupal.sshname }}
+              containerPort: {{ .Values.images.drupal.sshport }}
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.images.drupal.port }}
+            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.images.drupal.port }}
+            timeoutSeconds: 1
           envFrom:
             - configMapRef:
                 name: drupal-config
+          env:
+            - name: APACHE_RUN_USER
+              value: "nobody"
           volumeMounts:
+            - name: authorized-keys
+              mountPath: /root/.ssh/authorized_keys
+              subPath: authorized_keys
             - name: drupal-data
               mountPath: /opt/drupal/web/sites/default/files
           resources:
             {{- toYaml .Values.images.drupal.resources | nindent 12 }}
         ### END DRUPAL CONTAINER
-
+        ### BEGIN REDIS CONTAINER
+        {{- if .Values.images.redis.enabled }}
+        - name: {{ .Values.images.redis.name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.images.redis.repository }}:{{ .Values.images.redis.tag }}"
+          imagePullPolicy: {{ .Values.images.redis.pullPolicy | default .Values.images.pullPolicy }}
+          ports:
+            - name: {{ .Values.images.redis.name }}
+              containerPort: {{ .Values.images.redis.port }}
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.images.redis.port }}
+            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.images.redis.port }}
+          envFrom:
+            - configMapRef:
+                name: drupal-config
+          resources:
+            {{- toYaml .Values.images.redis.resources | nindent 12 }}
+        {{- end }}
+        ### END REDIS CONTIANER
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
