@@ -1,0 +1,28 @@
+name: Run command
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'The command to run in Quant Cloud (e.g "drush cr")'
+        required: true
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup kubeconfig
+        env:
+          SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
+          SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
+        run: |
+          ./ci/init-kube.sh
+
+      - name: Run the command
+        env:
+          KUBECONFIG: # Unset
+        run: |
+          kubectl exec deploy/drupal -- ${{ github.event.inputs.quant_project_name }}
