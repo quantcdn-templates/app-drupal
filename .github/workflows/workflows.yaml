@@ -2,7 +2,12 @@ name: Deploy to Quant Cloud
 
 on:
   push:
-    branches: [main, staging]
+    branches: [master]
+
+env:
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY_URL }}
+  IMAGE_NAME: ${{ secrets.CONTAINER_REGISTRY_URL }}/${{ secrets.CONTAINER_REGISTRY_PROJECT_PREFIX }}/${{ secrets.QUANT_PROJECT_ID }}
+  IMAGE_TAG: latest
 
 concurrency:
   group: ${{ github.ref }}
@@ -19,35 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      -
-        name: Set environment for branch
-        run: |
-          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-            echo "IMAGE_TAG=latest" >> "$GITHUB_ENV"
-            echo "IMAGE_NAME=${{ secrets.CONTAINER_REGISTRY_URL }}/${{ secrets.CONTAINER_REGISTRY_PROJECT_PREFIX }}/${{ secrets.QUANT_PROJECT_ID_PROD }}" >> "$GITHUB_ENV"
-            echo "SECTION_K8S_API_URL=${{ secrets.SECTION_K8S_API_URL_PROD }}" >> "$GITHUB_ENV"
-            echo "SECTION_API_TOKEN=${{ secrets.SECTION_API_TOKEN_PROD }}" >> "$GITHUB_ENV"
-            echo "MARIADB_USER=${{ secrets.MARIADB_USER_PROD }}" >> "$GITHUB_ENV"
-            echo "MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD_PROD }}" >> "$GITHUB_ENV"
-            echo "MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE_PROD }}" >> "$GITHUB_ENV"
-            echo "QUANT_PROJECT_ID=${{ secrets.QUANT_PROJECT_ID_PROD }}" >> "$GITHUB_ENV"
-            echo "QUANT_TOKEN=${{ secrets.QUANT_TOKEN_PROD }}" >> "$GITHUB_ENV"
-          elif [[ $GITHUB_REF == 'refs/heads/staging' ]]; then
-            echo "IMAGE_TAG=edge" >> "$GITHUB_ENV"
-            echo "IMAGE_NAME=${{ secrets.CONTAINER_REGISTRY_URL }}/${{ secrets.CONTAINER_REGISTRY_PROJECT_PREFIX }}/${{ secrets.QUANT_PROJECT_ID_STAGE }}" >> "$GITHUB_ENV"
-            echo "SECTION_K8S_API_URL=${{ secrets.SECTION_K8S_API_URL_STAGE }}" >> "$GITHUB_ENV"
-            echo "SECTION_API_TOKEN=${{ secrets.SECTION_API_TOKEN_STAGE }}" >> "$GITHUB_ENV"
-            echo "MARIADB_USER=${{ secrets.MARIADB_USER_STAGE }}" >> "$GITHUB_ENV"
-            echo "MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD_STAGE }}" >> "$GITHUB_ENV"
-            echo "MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE_STAGE }}" >> "$GITHUB_ENV"
-            echo "QUANT_PROJECT_ID=${{ secrets.QUANT_PROJECT_ID_STAGE }}" >> "$GITHUB_ENV"
-            echo "QUANT_TOKEN=${{ secrets.QUANT_TOKEN_STAGE }}" >> "$GITHUB_ENV"
-          else
-            echo "** CI pipelines are not configured for this branch"
-            exit 1
-          fi
-
       - name: Setup kubeconfig
+        env:
+          SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
+          SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
         run: |
           ./ci/init-kube.sh
           echo 'KUBECONFIG<<EOF' >> $GITHUB_ENV
@@ -86,9 +66,9 @@ jobs:
               --set images.drupal.tag="${{ env.IMAGE_TAG }}" \
               --set secrets.registry.user='${{ secrets.CONTAINER_REGISTRY_USER }}' \
               --set secrets.registry.token='${{ secrets.CONTAINER_REGISTRY_TOKEN }}' \
-              --set secrets.database.username="${{ env.MARIADB_USER }}" \
-              --set secrets.database.password="${{ env.MARIADB_PASSWORD }}" \
-              --set secrets.database.database="${{ env.MARIADB_DATABASE }}" \
+              --set secrets.database.username="${{ secrets.MARIADB_USER }}" \
+              --set secrets.database.password="${{ secrets.MARIADB_PASSWORD }}" \
+              --set secrets.database.database="${{ secrets.MARIADB_DATABASE }}" \
               --set secrets.database.host="${{ secrets.MARIADB_HOST }}" \
               --set secrets.database.port="${{ secrets.MARIADB_PORT }}" \
               --set secrets.smtp.host="${{ secrets.QUANT_SMTP_HOST }}" \
@@ -103,13 +83,14 @@ jobs:
         env:
           KUBECONFIG: # Unset
         run: |
+          kubectl version
           sleep 300
           kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
 
       - name: Clear the QuantCDN caches
         uses: quantcdn/purge-action@v1.2.0
         with:
-          customer: conga
-          project: ${{ env.QUANT_PROJECT_ID }}
-          token: ${{ env.QUANT_TOKEN }}
+          customer: ${{ secrets.QUANT_CUSTOMER_ID }}
+          project: ${{ secrets.QUANT_PROJECT_ID }}
+          token: ${{ secrets.QUANT_TOKEN }}
           url_pattern: "/*"
