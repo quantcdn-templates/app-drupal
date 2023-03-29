@@ -1,6 +1,7 @@
 <?php
 
 // phpcs:ignoreFile
+use Drupal\Core\Installer\InstallerKernel;
 
 /**
  * @file
