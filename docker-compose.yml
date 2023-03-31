@@ -21,6 +21,7 @@ services:
 
   mariadb:
     image: mariadb:latest
+    <<: *environment
 
   redis:
     image: redis
