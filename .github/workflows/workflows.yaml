@@ -85,7 +85,7 @@ jobs:
         run: |
           kubectl version
           sleep 300
-          kubectl exec deploy/drupal -- /opt/deployment-scripts/post-deploy.sh
+          kubectl exec deploy/drupal --container=drupal -- /opt/deployment-scripts/post-deploy.sh
 
       - name: Clear the QuantCDN caches
         uses: quantcdn/purge-action@v1.2.0
