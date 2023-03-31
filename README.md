@@ -2,6 +2,10 @@
 
 This template provides everything you need to get started with [Drupal](https://www.drupal.com/) on QuantCDN.
 
+Click the "Deploy to Quant" button to create a new GitHub repository, QuantCDN project, and deployment pipelines.
+
+[![Deploy to Quant](https://www.quantcdn.io/img/quant-deploy-btn-sml.svg)](https://dashboard.quantcdn.io/deploy/step-one?template=app-drupal-nextjs)
+
 
 ### Build & test locally
 

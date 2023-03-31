@@ -1,10 +1,10 @@
 [{
-    "title": "Node Express",
-    "url": "/deploy/step-one?template=app-node-express",
-    "summary": "Express is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.",
-    "content": "With a myriad of HTTP utility methods and middleware at your disposal, creating a robust API is quick and easy. Express provides a thin layer of fundamental web application features, without obscuring Node.js features that you know and love.",
-    "image": "https://raw.githubusercontent.com/quantcdn-templates/app-node-express/master/quant/screenshot.png",
-    "categories": ["node.js", "express"],
+    "title": "Drupal 10",
+    "url": "/deploy/step-one?template=app-drupal",
+    "summary": "Drupal is one of the most popular PHP based CMS frameworks.",
+    "content": "Drupal 10 comes with even more features that Drupal developers and users love, including incredible tools to help build the versatile, structured content that dynamic web experiences require. Still the best digital experience platform(DXP) on the web, proudly open source.",
+    "image": "https://raw.githubusercontent.com/quantcdn-templates/app-drupal/master/quant/screenshot.png",
+    "categories": ["php", "cms", "drupal"],
     "tags": [],
     "template_type": "app"
 }]
