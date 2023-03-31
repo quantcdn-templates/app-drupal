@@ -35,6 +35,11 @@ spec:
         - name: drupal-data
           persistentVolumeClaim:
             claimName: drupal-pvc
+        {{- if .Values.images.redis.enabled }}
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+        {{- end }}
       containers:
         ### BEGIN DRUPAL CONTAINER
         - name: {{ .Values.images.drupal.name }}
@@ -86,6 +91,10 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.images.redis.repository }}:{{ .Values.images.redis.tag }}"
+          command:
+            - redis-server
+            - --save 60 1
+            - --loglevel warning
           imagePullPolicy: {{ .Values.images.redis.pullPolicy | default .Values.images.pullPolicy }}
           ports:
             - name: {{ .Values.images.redis.name }}
@@ -109,6 +118,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: drupal-config
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
           resources:
             {{- toYaml .Values.images.redis.resources | nindent 12 }}
         {{- end }}
