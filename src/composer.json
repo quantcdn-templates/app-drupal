@@ -30,7 +30,8 @@
     "scripts": {
         "post-install-cmd": [
             "@php -r \"copy('settings.php', 'web/sites/default/settings.php');\"",
-            "@php -r \"copy('services.yml', 'web/sites/default/services.yml');\""
+            "@php -r \"copy('services.yml', 'web/sites/default/services.yml');\"",
+            "@php -r \"copy('redis-unavailable.services.yml', 'web/sites/default/redis-unavailable.services.yml');\""
         ]
     },
     "minimum-stability": "stable",
