@@ -28,6 +28,7 @@ images:
     repository: redis
     tag: latest
     port: 6379
+    cachePolicy: volatile-lru
     resources:
       limits:
         cpu: 500m
