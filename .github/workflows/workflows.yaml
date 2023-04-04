@@ -54,7 +54,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Deploy to Quant Cloud
-        uses: koslibpro/helm-eks-action@master
+        uses: koslib/helm-eks-action@v1.28.0
         env:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
         with:
