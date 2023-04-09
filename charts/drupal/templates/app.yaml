@@ -102,8 +102,6 @@ spec:
             {{- else }}
             {{- toYaml .Values.images.drupal.devresources | nindent 12 }}
             {{- end }}
-
-            {{- toYaml .Values.images.drupal.resources | nindent 12 }}
         ### END DRUPAL CONTAINER
         ### BEGIN REDIS CONTAINER
         {{- if .Values.images.redis.enabled }}
@@ -146,7 +144,11 @@ spec:
               mountPath: /data
           {{- end }}
           resources:
+            {{- if eq .Values.productionBranch .Values.images.app.tag }}
             {{- toYaml .Values.images.redis.resources | nindent 12 }}
+            {{- else }}
+            {{- toYaml .Values.images.redis.devresources | nindent 12 }}
+            {{- end }}
         {{- end }}
         ### END REDIS CONTIANER
       {{- with .Values.nodeSelector }}
