@@ -23,7 +23,7 @@ spec:
         - name: ingress
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: registry.quant.cloud/quant-public/ingress:1.0.10
+          image: registry.quant.cloud/quant-public/ingress:1.0.11
           imagePullPolicy: Always
           ports:
             - containerPort: 80
