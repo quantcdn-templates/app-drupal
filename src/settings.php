@@ -101,9 +101,9 @@ $databases['default']['default'] = [
     'collation' => 'utf8mb4_general_ci',
 ];
 
-// Non-production environments install into a custom prefix.
+// Non-production environment database names.
 if (getenv('QUANT_ENVIRONMENT_TYPE') != 'production') {
-  $databases['default']['default']['prefix'] = 'dev_' . getenv('QUANT_ENVIRONMENT_BRANCH') . '_';
+  $databases['default']['default']['database'] = getenv('MARIADB_DATABASE') . '_' . getenv('QUANT_ENVIRONMENT_BRANCH');
 }
 
 
