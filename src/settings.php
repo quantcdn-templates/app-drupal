@@ -101,6 +101,12 @@ $databases['default']['default'] = [
     'collation' => 'utf8mb4_general_ci',
 ];
 
+// Non-production environments install into a custom prefix.
+if (getenv('QUANT_ENVIRONMENT_TYPE') != 'production') {
+  $databases['default']['default']['prefix'] = 'dev_' . getenv('QUANT_ENVIRONMENT_BRANCH');
+}
+
+
 /**
  * Customizing database settings.
  *
