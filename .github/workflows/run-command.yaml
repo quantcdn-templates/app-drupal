@@ -35,4 +35,4 @@ jobs:
         env:
           KUBECONFIG: # Unset
         run: |
-          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container drupal -- ${{ github.event.inputs.command }}
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container drupal-${{ env.BRANCH_NAME_CLEAN }} -- ${{ github.event.inputs.command }}

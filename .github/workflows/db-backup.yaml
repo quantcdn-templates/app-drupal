@@ -40,7 +40,7 @@ jobs:
           DIR: ${{ steps.backup.outputs.dir }}
         run: |
           mkdir -p $DIR
-          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal -- drush sql:dump > $DIR/$FILENAME
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- drush sql:dump > $DIR/$FILENAME
 
       - uses: actions/upload-artifact@v3
         with:
