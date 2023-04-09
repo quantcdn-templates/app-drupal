@@ -89,13 +89,23 @@ jobs:
               --set secrets.smtp.from_name="${{ secrets.QUANT_SMTP_FROM_NAME }}" \
               --set secrets.authorized_keys="${{ secrets.AUTHORIZED_KEYS }}"
 
-      - name: Run the post-deployment script
+      - name: Run the post-deployment script (non-production)
+        if: ${{ env.BRANCH_NAME_CLEAN != 'main' }}
         env:
           KUBECONFIG: # Unset
         run: |
           kubectl version
           sleep 300
-          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- /opt/deployment-scripts/post-deploy.sh
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- /opt/deployment-scripts/post-deploy-development.sh
+
+      - name: Run the post-deployment script (production)
+        if: ${{ env.BRANCH_NAME_CLEAN == 'main' }}
+        env:
+          KUBECONFIG: # Unset
+        run: |
+          kubectl version
+          sleep 300
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- /opt/deployment-scripts/post-deploy-production.sh
 
       - name: Clear the QuantCDN caches
         uses: quantcdn/purge-action@v1.2.0
