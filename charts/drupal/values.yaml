@@ -29,6 +29,7 @@ images:
     tag: latest
     port: 6379
     cachePolicy: volatile-lru
+    maxmemory: 419430400
     resources:
       limits:
         cpu: 500m
