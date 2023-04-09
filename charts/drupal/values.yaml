@@ -5,9 +5,14 @@ replicaCount: 1
 
 nameOverride: ""
 fullnameOverride: ""
+productionBranch: main
 
 images:
   pullPolicy: Always
+  app:
+    tag: main
+    name: drupal
+    port: 80
   drupal:
     name: drupal
     sshname: drupal-ssh
@@ -22,6 +27,13 @@ images:
       requests:
         cpu: 1500m
         memory: 1548Mi
+    devresources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 500m
+        memory: 256Mi
   redis:
     enabled: true
     name: redis
@@ -35,6 +47,13 @@ images:
       requests:
         cpu: 500m
         memory: 500Mi
+    devresources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 200m
+        memory: 128Mi
 
 
 podAnnotations: {}

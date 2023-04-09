@@ -2,12 +2,15 @@ name: Deploy to Quant Cloud
 
 on:
   push:
-    branches: [master]
+    branches:
+      - main
+      - develop
+      - 'feature/*'
 
 env:
   REGISTRY: ${{ secrets.CONTAINER_REGISTRY_URL }}
   IMAGE_NAME: ${{ secrets.CONTAINER_REGISTRY_URL }}/${{ secrets.CONTAINER_REGISTRY_PROJECT_PREFIX }}/${{ secrets.QUANT_PROJECT_ID }}
-  IMAGE_TAG: latest
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 concurrency:
   group: ${{ github.ref }}
@@ -23,6 +26,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      -
+        name: Create friendly branch name
+        run: |
+          BRANCH_NAME=`echo $BRANCH_NAME | tr "[:upper:]" "[:lower:]" | sed -e 's/\//-/g'`
+          echo $BRANCH_NAME
+          echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
 
       - name: Setup kubeconfig
         env:
@@ -49,7 +59,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: ${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME_CLEAN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -59,11 +69,11 @@ jobs:
           KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
         with:
           command: |
-            helm upgrade --install drupal \
+            helm upgrade --install ${{ env.BRANCH_NAME_CLEAN }} \
               charts/drupal \
               --set appVersion="${{ github.sha }}" \
               --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
-              --set images.drupal.tag="${{ env.IMAGE_TAG }}" \
+              --set images.app.tag="${{ env.BRANCH_NAME_CLEAN }}" \
               --set secrets.registry.user='${{ secrets.CONTAINER_REGISTRY_USER }}' \
               --set secrets.registry.token='${{ secrets.CONTAINER_REGISTRY_TOKEN }}' \
               --set secrets.database.username="${{ secrets.MARIADB_USER }}" \
