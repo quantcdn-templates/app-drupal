@@ -20,6 +20,8 @@ images:
     tag: edge
     port: 80
     sshport: 22
+    storage: 20Gi
+    devstorage: 5Gi
     resources:
       limits:
         cpu: 1500m
