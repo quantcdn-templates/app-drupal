@@ -24,4 +24,4 @@ jobs:
 
       - name: Run the scheduled task
         run: |
-          kubectl exec deploy/drupal --container=drupal -- /opt/deployment-scripts/cron.sh
+          kubectl exec deploy/drupal-main --container=drupal -- /opt/deployment-scripts/cron.sh
