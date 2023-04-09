@@ -4,7 +4,7 @@ NC='\033[0m'
 
 ## PRODUCTION
 ## This script will run after each deployment completes.
-printf "** ${RED}Production environment${NC} post-deploy-development\n"
+printf "${RED}**Production environment**${NC} post-deploy-development\n"
 
 ## Cache rebuild and database updates.
 drush updb -y

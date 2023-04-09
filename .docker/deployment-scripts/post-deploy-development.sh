@@ -4,7 +4,7 @@ NC='\033[0m'
 
 ## DEVELOPMENT
 ## This script will run after each deployment completes.
-printf "** ${GREEN}Development environment${NC} post-deploy-development\n"
+printf "${GREEN}**Development environment**${NC} post-deploy-development\n"
 
 ## Synchronize the database with the latest copy of production.
 
