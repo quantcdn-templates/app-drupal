@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       {{- if eq .Values.productionBranch .Values.images.app.tag }}
-      storage: {{ Values.images.drupal.storage }}
+      storage: {{ .Values.images.drupal.storage }}
       {{- else }}
-      storage: {{ Values.images.drupal.devstorage }}
+      storage: {{ .Values.images.drupal.devstorage }}
       {{- end }}
