@@ -1,32 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: drupal
+  annotations:
+    timestamp: {{ now | quote }}
+  name: "{{ .Values.images.app.name }}-{{ .Values.images.app.tag }}"
   labels:
-    app: drupal
+    app: "{{ .Values.images.app.name }}-{{ .Values.images.app.tag }}"
+    version: {{ .Values.appVersion }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "quant.selectorLabels" . | nindent 6 }}
-      app: drupal
+      app: "{{ .Values.images.app.name }}-{{ .Values.images.app.tag }}"
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        timestamp: {{ now | quote }}
       labels:
-        {{- include "quant.selectorLabels" . | nindent 8 }}
-        app: {{ .Values.images.drupal.name }}
+        app: "{{ .Values.images.app.name }}-{{ .Values.images.app.tag }}"
         version: {{ .Values.appVersion }}
     spec:
       imagePullSecrets:
         - name: quant-cloud
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      # Mounted volumes on production only.
+      {{- if eq .Values.productionBranch .Values.images.app.tag }}
       volumes:
         - name: authorized-keys
           configMap:
@@ -40,13 +41,14 @@ spec:
           persistentVolumeClaim:
             claimName: redis-pvc
         {{- end }}
+      {{- end }}
       containers:
         ### BEGIN DRUPAL CONTAINER
-        - name: {{ .Values.images.drupal.name }}
+        - name: "{{ .Values.images.drupal.name }}-{{ .Values.images.app.tag }}"
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.images.drupal.repository }}:{{ .Values.images.drupal.tag }}"
-          imagePullPolicy: {{ .Values.images.drupal.pullPolicy | default .Values.images.pullPolicy }}
+          image: "{{ .Values.images.drupal.repository }}:{{ .Values.images.app.tag }}"
+          imagePullPolicy: Always
           ports:
             - name: {{ .Values.images.drupal.name }}
               containerPort: {{ .Values.images.drupal.port }}
@@ -76,13 +78,31 @@ spec:
           env:
             - name: APACHE_RUN_USER
               value: "nobody"
+            - name: QUANT_PRODUCTION_ENVIRONMENT
+              value: "{{ .Values.productionBranch }}"
+            - name: QUANT_ENVIRONMENT_BRANCH
+              value: "{{ .Values.images.app.tag }}"
+            - name: QUANT_ENVIRONMENT_TYPE
+              {{- if eq .Values.productionBranch .Values.images.app.tag }}
+              value: "production"
+              {{- else }}
+              value: "development"
+              {{- end }}
+          {{- if eq .Values.productionBranch .Values.images.app.tag }}
           volumeMounts:
             - name: authorized-keys
               mountPath: /root/.ssh/authorized_keys
               subPath: authorized_keys
             - name: drupal-data
               mountPath: /opt/drupal/web/sites/default/files
+          {{- end }}
           resources:
+            {{- if eq .Values.productionBranch .Values.images.app.tag }}
+            {{- toYaml .Values.images.drupal.resources | nindent 12 }}
+            {{- else }}
+            {{- toYaml .Values.images.drupal.devresources | nindent 12 }}
+            {{- end }}
+
             {{- toYaml .Values.images.drupal.resources | nindent 12 }}
         ### END DRUPAL CONTAINER
         ### BEGIN REDIS CONTAINER
@@ -120,9 +140,11 @@ spec:
           envFrom:
             - configMapRef:
                 name: drupal-config
+          {{- if eq .Values.productionBranch .Values.images.app.tag }}
           volumeMounts:
             - name: redis-data
               mountPath: /data
+          {{- end }}
           resources:
             {{- toYaml .Values.images.redis.resources | nindent 12 }}
         {{- end }}

@@ -3,12 +3,22 @@ name: Database backup
 on:
   workflow_dispatch:
 
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
 jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      -
+        name: Create friendly branch name
+        run: |
+          BRANCH_NAME=`echo $BRANCH_NAME | tr "[:upper:]" "[:lower:]" | sed -e 's/\//-/g'`
+          echo $BRANCH_NAME
+          echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
 
       - name: Setup kubeconfig
         env:
@@ -30,7 +40,7 @@ jobs:
           DIR: ${{ steps.backup.outputs.dir }}
         run: |
           mkdir -p $DIR
-          kubectl exec deploy/drupal --container=drupal -- drush sql:dump > $DIR/$FILENAME
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- drush sql:dump > $DIR/$FILENAME
 
       - uses: actions/upload-artifact@v3
         with:

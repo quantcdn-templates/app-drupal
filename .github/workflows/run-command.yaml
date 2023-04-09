@@ -7,12 +7,22 @@ on:
         description: 'The command to run in Quant Cloud (e.g "drush cr")'
         required: true
 
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
 jobs:
   run-command:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      -
+        name: Create friendly branch name
+        run: |
+          BRANCH_NAME=`echo $BRANCH_NAME | tr "[:upper:]" "[:lower:]" | sed -e 's/\//-/g'`
+          echo $BRANCH_NAME
+          echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
 
       - name: Setup kubeconfig
         env:
@@ -25,4 +35,4 @@ jobs:
         env:
           KUBECONFIG: # Unset
         run: |
-          kubectl exec deploy/drupal --container drupal -- ${{ github.event.inputs.command }}
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container drupal-${{ env.BRANCH_NAME_CLEAN }} -- ${{ github.event.inputs.command }}

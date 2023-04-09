@@ -1,6 +1,9 @@
+{{- if eq .Values.productionBranch .Values.images.app.tag }}
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    "helm.sh/resource-policy": keep
   name: ingress-upstream
   namespace: default
   labels:
@@ -12,8 +15,9 @@ spec:
       protocol: TCP
       targetPort: 80
     selector:
-        app: drupal
+        app: quant-ingress
     sessionAffinity: None
     type: ClusterIP
 status:
     loadBalancer: {}
+{{- end }}
