@@ -103,7 +103,7 @@ $databases['default']['default'] = [
 
 // Non-production environments install into a custom prefix.
 if (getenv('QUANT_ENVIRONMENT_TYPE') != 'production') {
-  $databases['default']['default']['prefix'] = 'dev_' . getenv('QUANT_ENVIRONMENT_BRANCH');
+  $databases['default']['default']['prefix'] = 'dev_' . getenv('QUANT_ENVIRONMENT_BRANCH') . '_';
 }
 
 
