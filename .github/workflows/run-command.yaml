@@ -14,9 +14,6 @@ jobs:
   run-command:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       -
         name: Create friendly branch name
         run: |
@@ -24,12 +21,10 @@ jobs:
           echo $BRANCH_NAME
           echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
 
-      - name: Setup kubeconfig
+      - uses: quantcdn/cloud-init-action@v1.0.0
         env:
           SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
           SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
-        run: |
-          ./ci/init-kube.sh
 
       - name: Run the command
         env:
