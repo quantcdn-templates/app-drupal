@@ -1,0 +1,134 @@
+name: Deploy to Quant Cloud
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+
+env:
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY_URL }}
+  IMAGE_NAME: ${{ secrets.CONTAINER_REGISTRY_URL }}/${{ secrets.CONTAINER_REGISTRY_PROJECT_PREFIX }}/${{ secrets.QUANT_PROJECT_ID }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    environment:
+      name: Quant Cloud (${{ github.head_ref || github.ref_name }})
+      url: ${{ steps.setup-branch-names.outputs.ENVIRONMENT_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      -
+        name: Create friendly branch name
+        id: setup-branch-names
+        run: |
+          BRANCH_NAME=`echo $BRANCH_NAME | tr "[:upper:]" "[:lower:]" | sed "s/[^[:alnum:]-]/-/g"`
+          echo $BRANCH_NAME
+          echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
+          echo "ENVIRONMENT_URL=http://drupal-$BRANCH_NAME.`echo ${{ secrets.QUANT_PROJECT_UUID }} | base64 -d`.apps.quant.cloud" >> $GITHUB_OUTPUT
+
+      -
+        name: Set production vs. non-production values
+        run: |
+          if [[ $BRANCH_NAME_CLEAN == 'main' ]]; then
+            echo "MARIADB_USER=${{ secrets.MARIADB_USER }}" >> "$GITHUB_ENV"
+            echo "MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}" >> "$GITHUB_ENV"
+            echo "MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}" >> "$GITHUB_ENV"
+          else
+            echo "MARIADB_USER=${{ secrets.MARIADB_USER_DEV }}" >> "$GITHUB_ENV"
+            echo "MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD_DEV }}" >> "$GITHUB_ENV"
+            echo "MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}_`md5sum<<<$BRANCH_NAME_CLEAN | head -c 8`" >> "$GITHUB_ENV"
+          fi
+
+      - uses: quantcdn/cloud-init-action@v1.0.0
+        env:
+          SECTION_K8S_API_URL: "${{ secrets.SECTION_K8S_API_URL }}"
+          SECTION_API_TOKEN: "${{ secrets.SECTION_API_TOKEN }}"
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY_URL }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USER }}
+          password: ${{ secrets.CONTAINER_REGISTRY_TOKEN }}
+
+      - name: Use buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push Docker image to Quant Cloud
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME_CLEAN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Quant Cloud
+        uses: koslib/helm-eks-action@v1.28.0
+        env:
+          KUBE_CONFIG_DATA: ${{ env.KUBECONFIG }}
+        with:
+          command: |
+            helm repo add quantcdn https://quantcdn.github.io/helm-charts/ 
+            helm upgrade --install ${{ env.BRANCH_NAME_CLEAN }} \
+              quantcdn/drupal \
+              --version 0.3.9 \
+              --set appVersion="${{ github.sha }}" \
+              --set appEnvironment="${{ env.BRANCH_NAME_CLEAN }}" \
+              --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
+              --set images.app.tag="${{ env.BRANCH_NAME_CLEAN }}" \
+              --set secrets.registry.user='${{ secrets.CONTAINER_REGISTRY_USER }}' \
+              --set secrets.registry.token='${{ secrets.CONTAINER_REGISTRY_TOKEN }}' \
+              --set secrets.database.username="${{ env.MARIADB_USER }}" \
+              --set secrets.database.password="${{ env.MARIADB_PASSWORD }}" \
+              --set secrets.database.database="${{ env.MARIADB_DATABASE }}" \
+              --set secrets.database.host="${{ secrets.MARIADB_HOST }}" \
+              --set secrets.database.port="${{ secrets.MARIADB_PORT }}" \
+              --set secrets.smtp.host="${{ secrets.QUANT_SMTP_HOST }}" \
+              --set secrets.smtp.port="${{ secrets.QUANT_SMTP_PORT }}" \
+              --set secrets.smtp.username="${{ secrets.QUANT_SMTP_USERNAME }}" \
+              --set secrets.smtp.password="${{ secrets.QUANT_SMTP_PASSWORD }}" \
+              --set secrets.smtp.from="${{ secrets.QUANT_SMTP_FROM }}" \
+              --set secrets.smtp.from_name="${{ secrets.QUANT_SMTP_FROM_NAME }}" \
+              --set secrets.authorized_keys="${{ secrets.AUTHORIZED_KEYS }}"
+
+      - name: Run the post-deployment script (non-production)
+        if: ${{ env.BRANCH_NAME_CLEAN != 'main' }}
+        env:
+          KUBECONFIG: # Unset
+        run: |
+          kubectl version
+          sleep 300
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- /opt/deployment-scripts/post-deploy-development.sh
+
+      - name: Run the post-deployment script (production)
+        if: ${{ env.BRANCH_NAME_CLEAN == 'main' }}
+        env:
+          KUBECONFIG: # Unset
+        run: |
+          kubectl version
+          sleep 300
+          kubectl exec deploy/drupal-${{ env.BRANCH_NAME_CLEAN }} --container=drupal-${{ env.BRANCH_NAME_CLEAN }} -- /opt/deployment-scripts/post-deploy-production.sh
+
+      - name: Clear the QuantCDN caches
+        uses: quantcdn/purge-action@v1.2.0
+        with:
+          customer: ${{ secrets.QUANT_CUSTOMER_ID }}
+          project: ${{ secrets.QUANT_PROJECT_ID }}
+          token: ${{ secrets.QUANT_TOKEN }}
+          url_pattern: "/*"
+

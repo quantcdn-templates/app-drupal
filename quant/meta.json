@@ -1,0 +1,11 @@
+[{
+    "title": "Drupal 10",
+    "url": "/deploy/step-one?template=app-drupal",
+    "summary": "Drupal is one of the most popular PHP based CMS frameworks.",
+    "content": "Drupal 10 comes with even more features that Drupal developers and users love, including incredible tools to help build the versatile, structured content that dynamic web experiences require. Still the best digital experience platform (DXP) on the web, proudly open source.",
+    "image": "https://raw.githubusercontent.com/quantcdn-templates/app-drupal/main/quant/screenshot.png",
+    "categories": ["php", "cms", "drupal"],
+    "tags": [],
+    "template_type": "app",
+    "requires_db": true
+}]
