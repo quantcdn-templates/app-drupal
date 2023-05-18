@@ -35,7 +35,7 @@ jobs:
         name: Create friendly branch name
         id: setup-branch-names
         run: |
-          BRANCH_NAME=`echo $BRANCH_NAME | tr "[:upper:]" "[:lower:]" | sed "s/[^[:alnum:]-]/-/g"`
+          BRANCH_NAME=`echo ${BRANCH_NAME##*/} | tr "[:upper:]" "[:lower:]" | sed "s/[^[:alnum:]]//g"`
           echo $BRANCH_NAME
           echo "BRANCH_NAME_CLEAN=$(echo $BRANCH_NAME)" >> $GITHUB_ENV
           echo "ENVIRONMENT_URL=http://drupal-$BRANCH_NAME.`echo ${{ secrets.QUANT_PROJECT_UUID }} | base64 -d`.apps.quant.cloud" >> $GITHUB_OUTPUT
@@ -86,7 +86,7 @@ jobs:
             helm repo add quantcdn https://quantcdn.github.io/helm-charts/ 
             helm upgrade --install ${{ env.BRANCH_NAME_CLEAN }} \
               quantcdn/drupal \
-              --version 0.3.9 \
+              --version 0.3.15 \
               --set appVersion="${{ github.sha }}" \
               --set appEnvironment="${{ env.BRANCH_NAME_CLEAN }}" \
               --set images.drupal.repository="${{ env.IMAGE_NAME }}" \
