@@ -9,6 +9,7 @@ RUN set -eux; \
 	if command -v a2enmod; then \
 		a2enmod rewrite; \
 		a2enmod headers; \
+		a2enmod proxy proxy_http; \
 	fi; \
 	\
 	savedAptMark="$(apt-mark showmanual)"; \
@@ -51,9 +52,9 @@ RUN set -eux; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false;
 
 # Install redis with pecl.
-RUN pecl install -o -f redis \
+RUN pecl install -o -f redis apcu \
 	&&  rm -rf /tmp/pear \
-	&&  docker-php-ext-enable redis
+	&&  docker-php-ext-enable redis apcu
 
 # install the mysql client and other required tools
 RUN apt-get install -y --no-install-recommends default-mysql-client vim ssmtp openssh-server git
@@ -85,7 +86,8 @@ RUN chmod +x /opt/deployment-scripts/*
 
 RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
-	composer install; \
+	composer config apcu-autoloader true; \
+	composer install --optimize-autoloader --apcu-autoloader; \
 	chown -R www-data:www-data web/sites web/modules web/themes; \
 	rmdir /var/www/html; \
 	usermod -a -G www-data nobody; \
