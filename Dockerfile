@@ -57,7 +57,7 @@ RUN pecl install -o -f redis apcu \
 	&&  docker-php-ext-enable redis apcu
 
 # install the mysql client and other required tools
-RUN apt-get install -y --no-install-recommends default-mysql-client vim ssmtp openssh-server git
+RUN apt-get install -y --no-install-recommends default-mysql-client vim ssmtp openssh-server git jq
 
 # remove apt caches
 RUN rm -rf /var/lib/apt/lists/*
