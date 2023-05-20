@@ -106,4 +106,3 @@ if (PHP_SAPI !== 'cli' &&
   die("Not allowed.");
 }
 ```
-
