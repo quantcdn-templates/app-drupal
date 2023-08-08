@@ -91,7 +91,8 @@ RUN set -eux; \
 	chown -R www-data:www-data web/sites web/modules web/themes; \
 	rmdir /var/www/html; \
 	usermod -a -G www-data nobody; \
-	usermod -a -G root nobody; \
+	usermod -a -G nobody root; \
+	usermod -a -G www-data root; \
 	ln -sf /opt/drupal/web /var/www/html; \
 	# delete composer cache
 	rm -rf "$COMPOSER_HOME"
