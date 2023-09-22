@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="Drupal">
+    <description>Drupal coding standard</description>
+    <rule ref="Drupal" />
+    <file>./web/modules/custom</file>
+    <file>./web/themes/custom</file>
+</ruleset>
