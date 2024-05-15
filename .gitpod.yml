@@ -1,3 +1,5 @@
+image: drupalpod/drupalpod-gitpod-base:20231222
+
 tasks:
   - name: Build Application
     before: |
