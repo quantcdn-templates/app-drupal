@@ -1,0 +1,7 @@
+# Expose port 3000 and 5000 of DDEV's web container.
+services:
+  web:
+    # ports are a list of exposed *container* ports
+    ports:
+      - 3000:3000
+      - 5000:5000
