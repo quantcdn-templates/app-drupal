@@ -1,54 +1,53 @@
 image: drupalpod/drupalpod-gitpod-base:20231222
 
 tasks:
-  - name: Build Application
-    before: |
-      ddev config global --instrumentation-opt-in=true
-    init: |
+  - init: |
       ddev start -y
       ddev composer install
-    command: gp sync-done build_application
-  - name: Open Browser
+      ddev drush si -y --account-pass=admin --site-name='ddev_gitpod' demo_umami
+      ddev drush en -y admin_toolbar
     command: |
-      gp sync-await build_application
       ddev start -y
-      ddev drush cr
-      gp preview $(gp url 8080)
-      ddev drush uli
-# VScode extensions
+      gp ports await 8080 && gp preview $(gp url 8080)
+# VScode xdebug extension
 vscode:
   extensions:
-    # Twig language support
-    - mblode.twig-language-2
-    # YAML language support
-    - redhat.vscode-yaml
-    # PHP documentation block support
+    # PHP extensions.
+    - felixfbecker.php-debug
+    - wongjn.php-sniffer
     - neilbrayfield.php-docblocker
-    # PHP code intelligence
     - bmewburn.vscode-intelephense-client
-    # Gherkin support for Behat test writing
-    - alexkrechik.cucumberautocomplete
-    # Drupal API support
     - andrewdavidblum.drupal-smart-snippets
-    # Git Extension Pack including Git Lens
-    - donjayamanne.git-extension-pack
+
+    # Twig extensions.
+    - mblode.twig-language-2
+
+    # Bash extensions.
+    - timonwong.shellcheck
+    - rogalmic.bash-debug
+
 ports:
   # Used by ddev - local db clients
   - port: 3306
     onOpen: ignore
+  # Used by projector
+  - port: 6942
+    onOpen: ignore
   # Used by MailHog
   - port: 8027
     onOpen: ignore
- # Used by phpMyAdmin
+  # Used by phpMyAdmin
   - port: 8036
     onOpen: ignore
   # Direct-connect ddev-webserver port that is the main port
   - port: 8080
     onOpen: ignore
-    visibility: public
   # Ignore host https port
   - port: 8443
     onOpen: ignore
- # xdebug port
+  # xdebug port
   - port: 9003
     onOpen: ignore
+  # projector port
+  - port: 9999
+    onOpen: open-browser
