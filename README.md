@@ -6,6 +6,8 @@ Click the "Deploy to Quant" button to create a new GitHub repository, QuantCDN p
 
 [![Deploy to Quant](https://www.quantcdn.io/img/quant-deploy-btn-sml.svg)](https://dashboard.quantcdn.io/deploy/step-one?template=app-drupal)
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/quantcdn-templates/app-drupal)
+
 
 ### Build & test locally
 
