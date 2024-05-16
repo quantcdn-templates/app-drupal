@@ -14,7 +14,7 @@ composer_version: "2"
 web_environment:
     - QUANT_ENVIRONMENT_TYPE=local
 
-composer_root: src-drupal
+composer_root: src
 corepack_enable: false
 
 # Key features of DDEV's config.yaml:
