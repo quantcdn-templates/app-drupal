@@ -91,10 +91,10 @@ use Drupal\Core\Installer\InstallerKernel;
  */
 $databases = [];
 $databases['default']['default'] = [
-    'database' => getenv('MARIADB_DATABASE'),
-    'username' => getenv('MARIADB_USER'),
-    'password' => getenv('MARIADB_PASSWORD'),
-    'host' => getenv('MARIADB_HOST'),
+    'database' => getenv('MARIADB_DATABASE') ?: 'db',
+    'username' => getenv('MARIADB_USER') ?: 'db',
+    'password' => getenv('MARIADB_PASSWORD') ?: 'db',
+    'host' => getenv('MARIADB_HOST') ?: 'db',
     'port' => getenv('MARIADB_PORT') ?: 3306,
     'driver' => 'mysql',
     'prefix' => getenv('MARIADB_PREFIX') ?: '',
