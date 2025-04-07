@@ -15,14 +15,14 @@
         }
     ],
     "require": {
-        "composer/installers": "^2.0",
-        "drupal/core-composer-scaffold": "^10.0",
-        "drupal/core-project-message": "^10.0",
-        "drupal/core-recommended": "^10.0",
-        "drupal/devel": "^5.1",
-        "drupal/quantcdn": "^1.5",
-        "drupal/redis": "^1.6",
-        "drush/drush": "^11.5"
+        "composer/installers": "^2.3",
+        "drupal/core-composer-scaffold": "^11",
+        "drupal/core-project-message": "^11",
+        "drupal/core-recommended": "^11",
+        "drupal/devel": "^5.3",
+        "drupal/quantcdn": "^2.0@RC",
+        "drupal/redis": "^1.9",
+        "drush/drush": "^13.5"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -34,15 +34,17 @@
             "@php -r \"copy('redis-unavailable.services.yml', 'web/sites/default/redis-unavailable.services.yml');\""
         ]
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
         "allow-plugins": {
             "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
             "drupal/core-composer-scaffold": true,
             "drupal/core-project-message": true,
+            "php-http/discovery": true,
             "phpstan/extension-installer": true,
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "tbachert/spi": true
         },
         "sort-packages": true
     },
@@ -104,6 +106,6 @@
         }
     },
     "require-dev": {
-        "drupal/core-dev": "^10.0"
+        "drupal/core-dev": "^11"
     }
 }
