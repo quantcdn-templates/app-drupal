@@ -70,6 +70,11 @@ jobs:
           push: true
           tags: |
             ${{ steps.ecr-endpoint-stripped.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ secrets.QUANT_APPLICATION }}:drupal${{ steps.vars.outputs.suffix }}
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/quantcdn-templates/app-drupal:cache
+          cache-to: |
+            type=gha,mode=max
 
       - name: Redeploy environment
         uses: quantcdn/quant-cloud-environment-state-action@v1

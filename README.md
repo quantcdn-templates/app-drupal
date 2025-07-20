@@ -75,8 +75,9 @@ rm .github/workflows/ci.yml
 
 ## Local Development
 
-For both deployment options, you can develop locally:
+For both deployment options, you can develop locally using either Docker Compose or DDEV:
 
+### Option 1: Docker Compose
 1. **Clone** your repo (or this template)
 2. **Copy overrides**:
    ```bash
@@ -88,6 +89,20 @@ For both deployment options, you can develop locally:
    ```
 4. **Install Drupal**: Visit http://localhost and follow the installation wizard
 5. **Access your site** at http://localhost
+
+### Option 2: DDEV (Recommended for Developers)
+1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
+2. **Start DDEV**:
+   ```bash
+   ddev start
+   ```
+3. **Install dependencies**:
+   ```bash
+   ddev composer install
+   ```
+4. **Access your site** at the provided DDEV URL
+
+DDEV provides additional developer tools like Xdebug, Drush integration, Redis caching, and matches production configuration exactly. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
 
