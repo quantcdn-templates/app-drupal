@@ -75,8 +75,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 # Set working directory
 WORKDIR /opt/drupal
 
-# Copy dependency files first (changes occasionally)
-COPY src/composer.json src/composer.lock* ./
+# Copy dependency files and required config files first (changes occasionally)
+COPY src/composer.json src/composer.lock* src/settings.php src/services.yml src/redis-unavailable.services.yml ./
 
 # Install PHP dependencies (cached until composer files change)
 RUN set -eux; \
