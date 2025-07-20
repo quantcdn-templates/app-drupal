@@ -35,7 +35,7 @@ jobs:
             echo "suffix=-staging" >> $GITHUB_OUTPUT
             echo "environment=staging" >> $GITHUB_OUTPUT
           elif [[ $GITHUB_REF == refs/heads/main ]]; then
-            # For master/main branch, use -latest suffix
+            # For main branch, use -latest suffix
             echo "suffix=-latest" >> $GITHUB_OUTPUT
             echo "environment=production" >> $GITHUB_OUTPUT
           else
