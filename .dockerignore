@@ -1,0 +1,54 @@
+# Git files
+.git
+.gitignore
+
+# CI/CD files
+.github
+
+# Documentation
+README.md
+LICENSE
+*.md
+docs/
+
+# Development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Composer dev dependencies already excluded in Dockerfile
+# But exclude local composer files
+composer.phar
+vendor/
+
+# Local development files
+.env
+.env.local
+docker-compose.override.yml
+.ddev/
+.gitpod/
+.gitpod.yml
+
+# Drupal specific excludes
+src/web/sites/*/files/
+src/web/sites/*/private/
+src/web/sites/simpletest/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Log files
+*.log 

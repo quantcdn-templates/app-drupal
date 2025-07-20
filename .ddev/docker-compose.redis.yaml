@@ -1,0 +1,26 @@
+version: '3.6'
+
+services:
+  redis:
+    container_name: ddev-${DDEV_SITENAME}-redis
+    image: redis:7-alpine
+    restart: "no"
+    user: "$DDEV_UID:$DDEV_GID"
+    ports:
+      - "6379"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+    volumes:
+      # Ensure redis data doesn't persist between restarts (like production)
+      - type: tmpfs
+        target: /data
+    command: ["redis-server", "--appendonly", "no"]
+    environment:
+      - DDEV_UID
+      - DDEV_GID
+      - DDEV_USERNAME
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 10 

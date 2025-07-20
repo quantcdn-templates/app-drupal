@@ -88,6 +88,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.tags.outputs.tags }}
+          cache-from: |
+            type=gha
+            type=registry,ref=ghcr.io/quantcdn-templates/app-drupal:cache
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=ghcr.io/quantcdn-templates/app-drupal:cache,mode=max
 
       - name: Test container startup
         run: |
