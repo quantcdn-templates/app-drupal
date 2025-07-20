@@ -91,14 +91,14 @@ use Drupal\Core\Installer\InstallerKernel;
  */
 $databases = [];
 $databases['default']['default'] = [
-    'database' => getenv('MARIADB_DATABASE') ?: 'db',
-    'username' => getenv('MARIADB_USER') ?: 'db',
-    'password' => getenv('MARIADB_PASSWORD') ?: 'db',
-    'host' => getenv('MARIADB_HOST') ?: 'db',
-    'port' => getenv('MARIADB_PORT') ?: 3306,
-    'driver' => 'mysql',
-    'prefix' => getenv('MARIADB_PREFIX') ?: '',
-    'collation' => 'utf8mb4_general_ci',
+  'database' => getenv('DB_DATABASE') ?: getenv('MARIADB_DATABASE') ?: 'drupal',
+  'username' => getenv('DB_USERNAME') ?: getenv('MARIADB_USER') ?: 'drupal',
+  'password' => getenv('DB_PASSWORD') ?: getenv('MARIADB_PASSWORD') ?: 'drupal',
+  'host' => getenv('DB_HOST') ?: getenv('MARIADB_HOST') ?: 'mysql',
+  'port' => getenv('DB_PORT') ?: getenv('MARIADB_PORT') ?: 3306,
+  'driver' => 'mysql',
+  'prefix' => getenv('DB_PREFIX') ?: getenv('MARIADB_PREFIX') ?: '',
+  'collation' => 'utf8mb4_general_ci',
 ];
 
 
@@ -276,7 +276,7 @@ $settings['config_sync_directory'] = '../config/default';
  *   $settings['hash_salt'] = file_get_contents('/home/example/salt.txt');
  * @endcode
  */
-$settings['hash_salt'] = getenv('MARIADB_DATABASE');
+$settings['hash_salt'] = getenv('DB_DATABASE') ?: getenv('MARIADB_DATABASE') ?: 'drupal_salt';
 
 /**
  * Deployment identifier.
@@ -851,75 +851,81 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 # }
 
 /**
- * Settings for Redis in Quant Cloud.
+ * Settings for Redis cache backend (Optional).
  *
- * This codebase ships with Redis by default, it is highly recommended
- * it is enabled and active for optimal performance.
+ * Redis can significantly improve performance by providing fast caching.
+ * Set REDIS_ENABLED=true environment variable to enable Redis caching.
  *
- * Ensure the 'redis' module is enabled on your project.
+ * Ensure the 'redis' module is enabled on your project if using Redis.
  */
 if (in_array(PHP_SAPI, array('cli', 'cli-server', 'phpdbg'))) {
   ini_set('memory_limit', '512M');
 }
 
-$redis = new \Redis();
-$redis_host = getenv('REDIS_HOST') ?: 'redis';
-$redis_port = getenv('REDIS_SERVICE_PORT') ?: 6379;
-$redis_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: 2;
+// Only attempt Redis connection if explicitly enabled
+if (getenv('REDIS_ENABLED') === 'true') {
+  $redis = new \Redis();
+  $redis_host = getenv('REDIS_HOST') ?: 'redis';
+  $redis_port = getenv('REDIS_SERVICE_PORT') ?: 6379;
+  $redis_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: 2;
 
-try {
-  if (InstallerKernel::installationAttempted()) {
-    // Do not set the cache during installations of Drupal.
-    throw new \Exception('Drupal installation underway.');
-  }
+  try {
+    if (InstallerKernel::installationAttempted()) {
+      // Do not set the cache during installations of Drupal.
+      throw new \Exception('Drupal installation underway.');
+    }
 
-  $redis->connect($redis_host, $redis_port, $redis_timeout);
-  $response = $redis->ping();
+    $redis->connect($redis_host, $redis_port, $redis_timeout);
+    $response = $redis->ping();
 
-  if (!$response) {
-    throw new \Exception('Redis could be reached but is not responding correctly.');
-  }
+    if (!$response) {
+      throw new \Exception('Redis could be reached but is not responding correctly.');
+    }
 
-  $settings['redis.connection']['interface'] = 'PhpRedis';
-  $settings['redis.connection']['host'] = $redis_host;
-  $settings['redis.connection']['port'] = $redis_port;
-  $settings['cache_prefix']['default'] = '';
+    $settings['redis.connection']['interface'] = 'PhpRedis';
+    $settings['redis.connection']['host'] = $redis_host;
+    $settings['redis.connection']['port'] = $redis_port;
+    $settings['cache_prefix']['default'] = '';
 
-  $settings['cache']['default'] = 'cache.backend.redis';
-  $settings['container_yamls'][] = 'modules/contrib/redis/example.services.yml';
-  $settings['container_yamls'][] = 'modules/contrib/redis/redis.services.yml';
-  $class_loader->addPsr4('Drupal\\redis\\', 'modules/contrib/redis/src');
-  $settings['bootstrap_container_definition'] = [
-    'parameters' => [],
-    'services' => [
-      'redis.factory' => [
-        'class' => 'Drupal\redis\ClientFactory',
-      ],
-      'cache.backend.redis' => [
-        'class' => 'Drupal\redis\Cache\CacheBackendFactory',
-        'arguments' => [
-          '@redis.factory',
-          '@cache_tags_provider.container',
-          '@serialization.phpserialize',
+    $settings['cache']['default'] = 'cache.backend.redis';
+    $settings['container_yamls'][] = 'modules/contrib/redis/example.services.yml';
+    $settings['container_yamls'][] = 'modules/contrib/redis/redis.services.yml';
+    $class_loader->addPsr4('Drupal\\redis\\', 'modules/contrib/redis/src');
+    $settings['bootstrap_container_definition'] = [
+      'parameters' => [],
+      'services' => [
+        'redis.factory' => [
+          'class' => 'Drupal\redis\ClientFactory',
+        ],
+        'cache.backend.redis' => [
+          'class' => 'Drupal\redis\Cache\CacheBackendFactory',
+          'arguments' => [
+            '@redis.factory',
+            '@cache_tags_provider.container',
+            '@serialization.phpserialize',
+          ],
+        ],
+        'cache.container' => [
+          'class' => '\Drupal\redis\Cache\PhpRedis',
+          'factory' => ['@cache.backend.redis', 'get'],
+          'arguments' => ['container'],
+        ],
+        'cache_tags_provider.container' => [
+          'class' => 'Drupal\redis\Cache\RedisCacheTagsChecksum',
+          'arguments' => ['@redis.factory'],
+        ],
+        'serialization.phpserialize' => [
+          'class' => 'Drupal\Component\Serialization\PhpSerialize',
         ],
       ],
-      'cache.container' => [
-        'class' => '\Drupal\redis\Cache\PhpRedis',
-        'factory' => ['@cache.backend.redis', 'get'],
-        'arguments' => ['container'],
-      ],
-      'cache_tags_provider.container' => [
-        'class' => 'Drupal\redis\Cache\RedisCacheTagsChecksum',
-        'arguments' => ['@redis.factory'],
-      ],
-      'serialization.phpserialize' => [
-        'class' => 'Drupal\Component\Serialization\PhpSerialize',
-      ],
-    ],
-  ];
-}
-catch (\Exception $e) {
-  // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis.UndefinedVariable
-  $settings['container_yamls'][] = "sites/default/redis-unavailable.services.yml";
-  $settings['cache']['default'] = 'cache.backend.null';
+    ];
+  }
+  catch (\Exception $e) {
+    // Redis connection failed - fall back to default cache
+    $settings['container_yamls'][] = "sites/default/redis-unavailable.services.yml";
+    $settings['cache']['default'] = 'cache.backend.database';
+  }
+} else {
+  // Redis not enabled - use database cache backend
+  $settings['cache']['default'] = 'cache.backend.database';
 }

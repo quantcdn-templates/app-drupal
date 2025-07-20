@@ -1,0 +1,36 @@
+# Local development overrides
+# Copy this file to docker-compose.override.yml for local development
+# This file is git-ignored to prevent conflicts with production deployments
+
+services:
+  drupal:
+    environment:
+      # Database configuration for local development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: drupal
+      DB_USERNAME: drupal
+      DB_PASSWORD: drupal
+      
+      # Local development settings
+      QUANT_ENVIRONMENT_TYPE: local
+      APACHE_RUN_USER: nobody
+      
+      # Optional Redis cache (uncomment to enable)
+      # REDIS_ENABLED: "true"
+      # REDIS_HOST: redis
+      
+      # Drupal debug settings (optional)
+      # DRUPAL_DEBUG: "true"
+
+  mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: drupal
+      MYSQL_DATABASE: drupal
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+
+  # Uncomment to enable Redis for local development
+  # redis:
+  #   labels:
+  #     quant.type: none 

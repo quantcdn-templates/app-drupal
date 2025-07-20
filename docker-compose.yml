@@ -1,27 +1,26 @@
-version: '3.3'
-
-x-environment: &environment
-  environment:
-    MARIADB_USER: drupal
-    MARIADB_PASSWORD: drupal
-    MARIADB_DATABASE: drupal
-    MARIADB_HOST: mariadb
-    MARIADB_ROOT_PASSWORD: drupal
-    QUANT_ENVIRONMENT_TYPE: local
-    APACHE_RUN_USER: nobody
-
 services:
-  app:
-    build: ./
+  drupal:
+    image: ghcr.io/quantcdn-templates/app-drupal:latest
+    build: .
     ports:
       - "80:80"
-    <<: *environment
     volumes:
       - ./src:/opt/drupal
+    # Database environment variables will be provided by Quant Cloud
+    # For local development, use docker-compose.override.yml
 
-  mariadb:
-    image: mariadb:latest
-    <<: *environment
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - mysql_data:/var/lib/mysql
+    labels:
+      quant.type: none  # Don't deploy to Quant Cloud
+    # Database configuration in docker-compose.override.yml
 
   redis:
-    image: redis
+    image: redis:alpine
+    labels:
+      quant.type: none  # Don't deploy to Quant Cloud
+
+volumes:
+  mysql_data:
