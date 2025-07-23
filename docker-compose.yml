@@ -5,7 +5,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./src:/opt/drupal
+      - ./src/web/sites/default/files:/opt/drupal/web/sites/default/files
     # Database environment variables will be provided by Quant Cloud
     # For local development, use docker-compose.override.yml
 
