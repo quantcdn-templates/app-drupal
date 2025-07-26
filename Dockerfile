@@ -23,7 +23,6 @@ RUN set -eux; \
         default-mysql-client \
         vim \
         ssmtp \
-        openssh-server \
         git \
         jq \
     && \
@@ -90,10 +89,8 @@ COPY .docker/deployment-scripts /opt/deployment-scripts
 COPY .docker/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 COPY .docker/quant/ /quant/
 
-# Set up permissions and SSH (rarely changes)
+# Set up permissions (rarely changes)
 RUN chmod +x /opt/deployment-scripts/* && \
-    mkdir -p /root/.ssh && \
-    mkdir -p /run/sshd && \
     usermod -a -G www-data nobody && \
     usermod -a -G root nobody && \
     usermod -a -G www-data root && \
@@ -111,7 +108,7 @@ RUN set -eux; \
 ENV PATH=${PATH}:/opt/drupal/vendor/bin
 
 # Expose ports
-EXPOSE 80 22
+EXPOSE 80
 
 # Set entrypoint and command
 ENTRYPOINT ["/quant/entrypoints.sh", "docker-php-entrypoint"]
