@@ -276,7 +276,7 @@ $settings['config_sync_directory'] = '../config/default';
  *   $settings['hash_salt'] = file_get_contents('/home/example/salt.txt');
  * @endcode
  */
-$settings['hash_salt'] = getenv('DB_DATABASE') ?: getenv('MARIADB_DATABASE') ?: 'drupal_salt';
+$settings['hash_salt'] = getenv('DRUPAL_HASH_SALT') ?: getenv('DB_DATABASE') ?: getenv('MARIADB_DATABASE');
 
 /**
  * Deployment identifier.
