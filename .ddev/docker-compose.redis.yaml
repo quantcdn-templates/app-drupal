@@ -15,7 +15,7 @@ services:
       # Ensure redis data doesn't persist between restarts (like production)
       - type: tmpfs
         target: /data
-    command: ["redis-server", "--appendonly", "no"]
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
     environment:
       - DDEV_UID
       - DDEV_GID
