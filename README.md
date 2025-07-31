@@ -92,15 +92,15 @@ For both deployment options, you can develop locally using either Docker Compose
 
 ### Option 2: DDEV (Recommended for Developers)
 1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
-2. **Start DDEV**:
-   ```bash
-   ddev start
-   ```
-3. **Install dependencies**:
+2. **Install dependencies**:
    ```bash
    ddev composer install
    ```
-4. **Access your site** at the provided DDEV URL
+3. **Check status**:
+   ```bash
+   ddev status
+   ```
+4. **Access your site** at the provided DDEV URL and go through the installer
 
 DDEV provides additional developer tools like Xdebug, Drush integration, Redis caching, and matches production configuration exactly. See `.ddev/README.md` for details.
 
