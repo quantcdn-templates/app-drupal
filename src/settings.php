@@ -719,6 +719,7 @@ $settings['container_yamls'][] = $app_root . '/' . $site_path . '/services.yml';
  */
 $settings['trusted_host_patterns'] = [
   'localhost',
+  '\.ddev.site$',
   '\.apps\.quant\.cloud$',
   '\.apps\.quantgovsites\.com$',
 ];
