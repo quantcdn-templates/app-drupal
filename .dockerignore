@@ -51,4 +51,8 @@ temp/
 tmp/
 
 # Log files
-*.log 
+*.log
+
+# Test files
+tests/
+phpunit.xml
