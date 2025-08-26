@@ -268,6 +268,10 @@ app-drupal/
 5. Run code standards: `./test-coding-standards.sh`
 6. Submit a pull request
 
+## Reporting a Vulnerability
+
+Please email security@quantcdn.io with details. Do not open a public issue for security vulnerabilities.
+
 ## License
 
 This template is released under the MIT License. See LICENSE file for details.
