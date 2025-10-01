@@ -12,7 +12,7 @@ database:
 use_dns_when_possible: true
 composer_version: "2"
 web_environment:
-    - QUANT_ENVIRONMENT_TYPE=local
+    - QUANT_ENV_TYPE=local
     - DB_HOST=db
     - DB_PORT=3306
     - DB_DATABASE=db

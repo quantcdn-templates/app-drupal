@@ -13,7 +13,7 @@ services:
       DB_PASSWORD: drupal
       
       # Local development settings
-      QUANT_ENVIRONMENT_TYPE: local
+      QUANT_ENV_TYPE: local
       APACHE_RUN_USER: nobody
       
       # Optional Redis cache (uncomment to enable)

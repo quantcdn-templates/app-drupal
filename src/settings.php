@@ -724,7 +724,7 @@ $settings['trusted_host_patterns'] = [
   '\.apps\.quantgovsites\.com$',
 ];
 
-if (getenv('QUANT_ENVIRONMENT_TYPE') != 'local') {
+if (getenv('QUANT_ENV_TYPE') != 'local') {
   $settings['reverse_proxy'] = TRUE;
   $settings['reverse_proxy_addresses'] = array($_SERVER['REMOTE_ADDR']);
 }
