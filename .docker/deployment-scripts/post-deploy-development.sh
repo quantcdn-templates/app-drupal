@@ -6,9 +6,6 @@ NC='\033[0m'
 ## This script will run after each deployment completes.
 printf "${GREEN}**Development environment**${NC} post-deploy-development\n"
 
-## Synchronize the database with the latest copy of production.
-
-
 ## Cache rebuild and database updates.
 drush updb -y
 
