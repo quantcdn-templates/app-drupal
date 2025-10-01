@@ -17,6 +17,9 @@ RUN set -eux; \
     composer install --optimize-autoloader --apcu-autoloader --no-dev; \
     rm -rf "$COMPOSER_HOME"
 
+# Enable mod rewrite
+RUN a2enmod rewrite
+
 # Copy configuration and scripts (changes occasionally)
 COPY .docker/deployment-scripts /quant/deployment-scripts
 
