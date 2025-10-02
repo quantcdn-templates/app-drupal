@@ -43,9 +43,16 @@ RUN set -eux; \
 # Set PATH
 ENV PATH=${PATH}:/opt/drupal/vendor/bin
 
+# Copy custom entrypoint script for local development
+# (Only used when overridden in docker-compose.override.yml)
+COPY .docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint-drupal.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint-drupal.sh
+
 # Expose ports
 EXPOSE 80
 
-# Use standard Apache/PHP entrypoint (entrypoints in /quant-entrypoint.d/ run via Quant platform wrapper)
+# Use standard Apache/PHP entrypoint by default
+# In Quant Cloud, the platform wrapper runs /quant-entrypoint.d/ scripts automatically
+# For local dev, copy docker-compose.override.yml.example to docker-compose.override.yml
 ENTRYPOINT ["docker-php-entrypoint"]
 CMD ["apache2-foreground"]
