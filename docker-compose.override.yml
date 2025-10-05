@@ -1,0 +1,48 @@
+# Docker Compose Override Example for Local Development
+# 
+# Copy this file to docker-compose.override.yml to enable local development features:
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+#
+# This override:
+# 1. Runs /quant-entrypoint.d/ scripts on container startup (for testing)
+# 2. Sets database environment variables for local MySQL container
+#
+# In production (Quant Cloud), the platform wrapper handles entrypoints automatically.
+
+services:
+  drupal:
+    # Override entrypoint for local dev to run /quant-entrypoint.d/ scripts
+    # This allows testing the same initialization that runs in Quant Cloud
+    entrypoint: ["/usr/local/bin/docker-entrypoint-drupal.sh"]
+    command: ["apache2-foreground"]
+    
+    environment:
+      # Database configuration for local development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: drupal
+      DB_USERNAME: drupal
+      DB_PASSWORD: drupal
+      
+      # Local development settings
+      QUANT_ENV_TYPE: development
+      APACHE_RUN_USER: nobody
+      
+      # Optional Redis cache (uncomment to enable)
+      # REDIS_ENABLED: "true"
+      # REDIS_HOST: redis
+      
+      # Drupal debug settings (optional)
+      # DRUPAL_DEBUG: "true"
+
+  mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: drupal
+      MYSQL_DATABASE: drupal
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+
+  # Uncomment to enable Redis for local development
+  # redis:
+  #   labels:
+  #     quant.type: none 
