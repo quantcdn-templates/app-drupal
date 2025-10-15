@@ -1,3 +1,11 @@
+# This workflow is an example of how you can build and push this codebase to Quant Cloud.
+# Use this as a starting point for your own workflow if you are forking this repository.
+#
+# Configuration Variables:
+# - RUNNER_TYPE: Set to 'ubuntu-24.04-arm' for ARM runners, defaults to 'ubuntu-latest' (x86)
+# - BUILD_PLATFORM: Set to 'linux/arm64' or 'linux/amd64' to match your runner
+# - QUANT_BASE_URL: Set to 'https://dash.quantgov.cloud/api/v3' for QuantGov customers
+#   (defaults to 'https://dashboard.quantcdn.io/api/v3')
 name: Build and Push Drupal to Quant Cloud
 
 on:
@@ -15,7 +23,7 @@ concurrency:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout code
@@ -30,12 +38,13 @@ jobs:
         with:
           quant_organization: ${{ secrets.QUANT_ORGANIZATION }}
           quant_api_key: ${{ secrets.QUANT_API_KEY }}
+          base_url: ${{ vars.QUANT_BASE_URL || 'https://dashboard.quantcdn.io/api/v3' }}
 
       - name: Build and push Drupal image
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/arm64
+          platforms: ${{ vars.BUILD_PLATFORM || 'linux/amd64' }}
           push: true
           tags: ${{ steps.init.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ steps.init.outputs.quant_application }}:drupal${{ steps.init.outputs.image_suffix }}
           build-args: |
@@ -53,6 +62,7 @@ jobs:
           environment_name: ${{ steps.init.outputs.environment_name }}
           from_environment: production
           image_suffix: ${{ steps.init.outputs.image_suffix_clean }}
+          base_url: ${{ vars.QUANT_BASE_URL || 'https://dashboard.quantcdn.io/api/v3' }}
 
       - name: Sync database from production to new environment
         if: ${{ !startsWith(github.ref, 'refs/tags/') && steps.init.outputs.environment_exists == 'false' && steps.init.outputs.environment_name
@@ -78,3 +88,4 @@ jobs:
           application: ${{ steps.init.outputs.quant_application }}
           environment: ${{ steps.init.outputs.environment_name }}
           action: redeploy
+          base_url: ${{ vars.QUANT_BASE_URL || 'https://dashboard.quantcdn.io/api/v3' }}
