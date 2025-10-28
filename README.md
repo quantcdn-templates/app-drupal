@@ -79,18 +79,22 @@ For both deployment options, you can develop locally using either Docker Compose
 
 ### Option 1: Docker Compose
 1. **Clone** your repo (or this template)
-2. **Copy overrides** (required for local development):
+2. **Install dependencies**:
+   ```bash
+   cd src && composer install && cd ..
+   ```
+3. **Copy overrides** (required for local development):
    ```bash
    cp docker-compose.override.yml.example docker-compose.override.yml
    ```
-   > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment.
+   > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. It also mounts your local `src/` directory for live code changes and disables opcache for faster development.
 
-3. **Start services**:
+4. **Start services**:
    ```bash
    docker-compose up -d
    ```
-4. **Install Drupal**: Visit http://localhost and follow the installation wizard
-5. **Access your site** at http://localhost
+5. **Install Drupal**: Visit http://localhost and follow the installation wizard
+6. **Access your site** at http://localhost
 
 ### Option 2: DDEV (Recommended for Developers)
 1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/

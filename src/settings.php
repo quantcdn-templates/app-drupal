@@ -101,6 +101,16 @@ $databases['default']['default'] = [
   'collation' => 'utf8mb4_general_ci',
 ];
 
+// Enable TLS/SSL for RDS database connections when certificate is available
+// Can be disabled for local development with DISABLE_DB_TLS=true
+$rds_cert_path = '/opt/rds-ca-certs/rds-ca-cert-bundle.pem';
+if (getenv('DISABLE_DB_TLS') !== 'true' && file_exists($rds_cert_path)) {
+  $databases['default']['default']['pdo'] = [
+    PDO::MYSQL_ATTR_SSL_CA => $rds_cert_path,
+    PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => TRUE,
+  ];
+}
+
 
 /**
  * Customizing database settings.

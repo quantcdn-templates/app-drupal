@@ -16,6 +16,12 @@ services:
     entrypoint: ["/usr/local/bin/docker-entrypoint-drupal.sh"]
     command: ["apache2-foreground"]
     
+    volumes:
+      # Mount entire src directory for local development
+      - ./src:/opt/drupal
+      # Mount dev PHP config to override production settings (zz- prefix ensures it loads last)
+      - ./dev-php.ini:/usr/local/etc/php/conf.d/zz-dev.ini:ro
+    
     environment:
       # Database configuration for local development
       DB_HOST: mysql
@@ -23,6 +29,7 @@ services:
       DB_DATABASE: drupal
       DB_USERNAME: drupal
       DB_PASSWORD: drupal
+      DISABLE_DB_TLS: "true"
       
       # Local development settings
       QUANT_ENV_TYPE: development
