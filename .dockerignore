@@ -35,6 +35,7 @@ vendor/
 .env
 .env.local
 docker-compose.override.yml
+dev-php.ini
 .ddev/
 .gitpod/
 .gitpod.yml
