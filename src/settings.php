@@ -732,6 +732,8 @@ $settings['trusted_host_patterns'] = [
   '\.ddev.site$',
   '\.apps\.quant\.cloud$',
   '\.apps\.quantgovsites\.com$',
+  '\.apps\.stage\.quant\.cloud$',
+  '\.apps\.stage\.quantgovsites\.com$',
 ];
 
 if (getenv('QUANT_ENV_TYPE') != 'local') {
