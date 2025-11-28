@@ -157,12 +157,23 @@ If Redis is not available or fails to connect, Drupal automatically falls back t
 This template includes Drush (Drupal Console) pre-installed and configured.
 
 ### Local Development
+
+**Docker Compose**
 ```bash
 docker compose exec drupal drush status
-docker compose exec drupal drush cr  # Clear cache
+docker compose exec drupal drush cr    # Clear cache
 docker compose exec drupal drush updb  # Update database
-docker compose exec drupal drush cex  # Export configuration
-docker compose exec drupal drush cim  # Import configuration
+docker compose exec drupal drush cex   # Export configuration
+docker compose exec drupal drush cim   # Import configuration
+```
+
+**DDEV**
+```bash
+ddev drush status
+ddev drush cr    # Clear cache
+ddev drush updb  # Update database
+ddev drush cex   # Export configuration
+ddev drush cim   # Import configuration
 ```
 
 ### Quant Cloud (via SSH/exec)
@@ -211,13 +222,27 @@ ddev exec php src/vendor/bin/phpcbf --standard=src/phpcs.xml
    ```
 
 2. **Enable the module**:
+
+   **Docker Compose**
    ```bash
    docker compose exec drupal drush pm:enable module_name
    ```
 
+   **DDEV**
+   ```bash
+   ddev drush pm:enable module_name
+   ```
+
 3. **Export configuration**:
+
+   **Docker Compose**
    ```bash
    docker compose exec drupal drush cex
+   ```
+
+   **DDEV**
+   ```bash
+   ddev drush cex
    ```
 
 ### Managing Configuration
@@ -245,19 +270,32 @@ ddev exec php src/vendor/bin/phpcbf --standard=src/phpcs.xml
    - Check for PHP memory limits
 
 4. **Port Conflicts**
-   - For docker compose, you may see `port is already allocated`
-   - If you are also running DDEV, turn it off first: `ddev poweroff`
+   - For docker compose, you may see `port is already allocated` errors
+   - If you are running DDEV, turn it off with `ddev poweroff`
+   - If you are running another app, turn it off with `docker compose -p app-name down`
 
 ### Logs
 
+**Docker Compose**
 View container logs:
 ```bash
 docker compose logs -f drupal
 ```
 
+**DDEV**
+```bash
+ddev logs -f
+```
+
 ### Accessing the Container
+**Docker Compose**
 ```bash
 docker compose exec drupal bash
+```
+
+**DDEV**
+```bash
+ddev ssh
 ```
 
 ## File Structure
