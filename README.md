@@ -78,36 +78,37 @@ rm .github/workflows/ci.yml
 For both deployment options, you can develop locally using either Docker Compose or DDEV:
 
 ### Option 1: Docker Compose
+
 1. **Clone** your repo (or this template)
 2. **Install dependencies**:
    ```bash
    cd src && composer install && cd ..
    ```
-3. **Copy overrides** (required for local development):
+3. **Use overrides** (required for local development):
    ```bash
-   cp docker-compose.override.yml.example docker-compose.override.yml
+   docker-compose.override.yml
    ```
-   > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. It also mounts your local `src/` directory for live code changes and disables opcache for faster development.
-
+   > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment. It also mounts your local `src/` directory for live code changes and disables opcache for faster development.
 4. **Start services**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
-5. **Install Drupal**: Visit http://localhost and follow the installation wizard
-6. **Access your site** at http://localhost
+5. **Access Drupal** at http://localhost and run through installation
 
 ### Option 2: DDEV (Recommended for Developers)
-1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
-2. **Install dependencies**:
+
+1. **Clone** your repo (or this template)
+2. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
+3. **Install dependencies**:
    ```bash
    ddev composer install
    ```
-3. **Check status**:
+4. **Check status**:
    ```bash
    ddev status
    ```
-4. **Access your site** at the provided DDEV URL and go through the installer
-
+5. **Access Drupal** at the provided DDEV URL and run through installation
+6. **Use DDEV Tools**
 DDEV provides additional developer tools like Xdebug, Drush integration, Redis caching, and matches production configuration exactly. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
@@ -157,11 +158,11 @@ This template includes Drush (Drupal Console) pre-installed and configured.
 
 ### Local Development
 ```bash
-docker-compose exec drupal drush status
-docker-compose exec drupal drush cr  # Clear cache
-docker-compose exec drupal drush updb  # Update database
-docker-compose exec drupal drush cex  # Export configuration
-docker-compose exec drupal drush cim  # Import configuration
+docker compose exec drupal drush status
+docker compose exec drupal drush cr  # Clear cache
+docker compose exec drupal drush updb  # Update database
+docker compose exec drupal drush cex  # Export configuration
+docker compose exec drupal drush cim  # Import configuration
 ```
 
 ### Quant Cloud (via SSH/exec)
@@ -180,12 +181,12 @@ Run PHP CodeSniffer to check code standards:
 
 ### Local Development
 ```bash
-docker-compose exec drupal vendor/bin/phpcs --standard=./phpcs.xml
+docker compose exec drupal vendor/bin/phpcs --standard=./phpcs.xml
 ```
 
 ### Fix coding standards automatically
 ```bash  
-docker-compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
+docker compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
 ```
 
 ## Development Workflow
@@ -199,12 +200,12 @@ docker-compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
 
 2. **Enable the module**:
    ```bash
-   docker-compose exec drupal drush pm:enable module_name
+   docker compose exec drupal drush pm:enable module_name
    ```
 
 3. **Export configuration**:
    ```bash
-   docker-compose exec drupal drush cex
+   docker compose exec drupal drush cex
    ```
 
 ### Managing Configuration
@@ -231,16 +232,20 @@ docker-compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
    - Clear Drupal cache: `drush cr`
    - Check for PHP memory limits
 
+4. **Port Conflicts**
+   - For docker compose, you may see `port is already allocated`
+   - If you are also running DDEV, turn it off first: `ddev poweroff`
+
 ### Logs
 
 View container logs:
 ```bash
-docker-compose logs -f drupal
+docker compose logs -f drupal
 ```
 
 ### Accessing the Container
 ```bash
-docker-compose exec drupal bash
+docker compose exec drupal bash
 ```
 
 ## File Structure
