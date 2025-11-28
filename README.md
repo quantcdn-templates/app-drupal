@@ -4,7 +4,7 @@ A production-ready Drupal template designed for deployment on Quant Cloud. This 
 
 ## Features
 
-- **Drupal Latest**: Based on PHP 8.3 with all required extensions
+- **Drupal Latest**: Based on PHP 8.4 with all required extensions
 - **Composer Managed**: Modern Drupal development with dependency management
 - **Quant Cloud Integration**: Maps Quant Cloud's `DB_*` variables to Drupal standards
 - **Production Ready**: Includes proper configuration, security settings, and performance optimizations
@@ -86,7 +86,7 @@ For both deployment options, you can develop locally using either Docker Compose
    ```
 3. **Use overrides** (required for local development):
    ```bash
-   docker-compose.override.yml
+   ls docker-compose.override.yml
    ```
    > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment. It also mounts your local `src/` directory for live code changes and disables opcache for faster development.
 4. **Start services**:
@@ -177,16 +177,28 @@ Drush automatically inherits the environment variables and database configuratio
 
 ## Code Standards
 
-Run PHP CodeSniffer to check code standards:
+### Find coding standard issues
 
-### Local Development
+**Docker Compose**
 ```bash
 docker compose exec drupal vendor/bin/phpcs --standard=./phpcs.xml
 ```
 
+**DDEV**
+```bash
+ddev exec php src/vendor/bin/phpcs --standard=src/phpcs.xml
+```
+
 ### Fix coding standards automatically
+
+**Docker Compose**
 ```bash  
 docker compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
+```
+
+**DDEV**
+```bash
+ddev exec php src/vendor/bin/phpcbf --standard=src/phpcs.xml
 ```
 
 ## Development Workflow
@@ -276,7 +288,7 @@ app-drupal/
 2. Create a feature branch
 3. Make your changes
 4. Test with both local development and Quant Cloud deployment
-5. Run code standards: `./test-coding-standards.sh`
+5. See "Code Standards" section above for checking coding standards
 6. Submit a pull request
 
 ## License
