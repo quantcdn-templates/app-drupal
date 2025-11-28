@@ -128,6 +128,7 @@ DDEV provides additional developer tools like Xdebug, Drush integration, Redis c
 ### Database Configuration (Automatic)
 These are automatically provided by Quant Cloud:
 - `DB_HOST` - Database host
+- `DB_PORT` - Database port
 - `DB_DATABASE` - Database name  
 - `DB_USERNAME` - Database username
 - `DB_PASSWORD` - Database password
@@ -154,7 +155,7 @@ If Redis is not available or fails to connect, Drupal automatically falls back t
 
 ## Drush Support
 
-This template includes Drush (Drupal Console) pre-installed and configured.
+This template includes Drush (Drupal CLI) pre-installed and configured.
 
 ### Local Development
 
