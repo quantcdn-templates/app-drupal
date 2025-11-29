@@ -1,3 +1,0 @@
-services:
-  chromedriver:
-    platform: linux/amd64
