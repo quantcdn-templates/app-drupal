@@ -4,7 +4,7 @@ A production-ready Drupal template designed for deployment on Quant Cloud. This 
 
 ## Features
 
-- **Drupal Latest**: Based on PHP 8.3 with all required extensions
+- **Drupal Latest**: Based on PHP 8.4 with all required extensions
 - **Composer Managed**: Modern Drupal development with dependency management
 - **Quant Cloud Integration**: Maps Quant Cloud's `DB_*` variables to Drupal standards
 - **Production Ready**: Includes proper configuration, security settings, and performance optimizations
@@ -78,36 +78,37 @@ rm .github/workflows/ci.yml
 For both deployment options, you can develop locally using either Docker Compose or DDEV:
 
 ### Option 1: Docker Compose
+
 1. **Clone** your repo (or this template)
 2. **Install dependencies**:
    ```bash
    cd src && composer install && cd ..
    ```
-3. **Copy overrides** (required for local development):
+3. **Use overrides** (required for local development):
    ```bash
-   cp docker-compose.override.yml.example docker-compose.override.yml
+   ls docker-compose.override.yml
    ```
-   > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. It also mounts your local `src/` directory for live code changes and disables opcache for faster development.
-
+   > **Note**: This override enables testing of entrypoint scripts (like `00-set-document-root.sh`) that normally run via Quant Cloud's platform wrapper. Required for proper local development environment. It also mounts your local `src/` directory for live code changes and disables opcache for faster development.
 4. **Start services**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
-5. **Install Drupal**: Visit http://localhost and follow the installation wizard
-6. **Access your site** at http://localhost
+5. **Access Drupal** at http://localhost and run through installation
 
 ### Option 2: DDEV (Recommended for Developers)
-1. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
-2. **Install dependencies**:
+
+1. **Clone** your repo (or this template)
+2. **Install DDEV**: https://ddev.readthedocs.io/en/stable/users/install/
+3. **Install dependencies**:
    ```bash
    ddev composer install
    ```
-3. **Check status**:
+4. **Check status**:
    ```bash
    ddev status
    ```
-4. **Access your site** at the provided DDEV URL and go through the installer
-
+5. **Access Drupal** at the provided DDEV URL and run through installation
+6. **Use DDEV Tools**
 DDEV provides additional developer tools like Xdebug, Drush integration, Redis caching, and matches production configuration exactly. See `.ddev/README.md` for details.
 
 **Local vs Quant Cloud:**
@@ -127,6 +128,7 @@ DDEV provides additional developer tools like Xdebug, Drush integration, Redis c
 ### Database Configuration (Automatic)
 These are automatically provided by Quant Cloud:
 - `DB_HOST` - Database host
+- `DB_PORT` - Database port
 - `DB_DATABASE` - Database name  
 - `DB_USERNAME` - Database username
 - `DB_PASSWORD` - Database password
@@ -153,15 +155,26 @@ If Redis is not available or fails to connect, Drupal automatically falls back t
 
 ## Drush Support
 
-This template includes Drush (Drupal Console) pre-installed and configured.
+This template includes Drush (Drupal CLI) pre-installed and configured.
 
 ### Local Development
+
+**Docker Compose**
 ```bash
-docker-compose exec drupal drush status
-docker-compose exec drupal drush cr  # Clear cache
-docker-compose exec drupal drush updb  # Update database
-docker-compose exec drupal drush cex  # Export configuration
-docker-compose exec drupal drush cim  # Import configuration
+docker compose exec drupal drush status
+docker compose exec drupal drush cr    # Clear cache
+docker compose exec drupal drush updb  # Update database
+docker compose exec drupal drush cex   # Export configuration
+docker compose exec drupal drush cim   # Import configuration
+```
+
+**DDEV**
+```bash
+ddev drush status
+ddev drush cr    # Clear cache
+ddev drush updb  # Update database
+ddev drush cex   # Export configuration
+ddev drush cim   # Import configuration
 ```
 
 ### Quant Cloud (via SSH/exec)
@@ -176,16 +189,28 @@ Drush automatically inherits the environment variables and database configuratio
 
 ## Code Standards
 
-Run PHP CodeSniffer to check code standards:
+### Find coding standard issues
 
-### Local Development
+**Docker Compose**
 ```bash
-docker-compose exec drupal vendor/bin/phpcs --standard=./phpcs.xml
+docker compose exec drupal vendor/bin/phpcs --standard=./phpcs.xml
+```
+
+**DDEV**
+```bash
+ddev exec php src/vendor/bin/phpcs --standard=src/phpcs.xml
 ```
 
 ### Fix coding standards automatically
+
+**Docker Compose**
 ```bash  
-docker-compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
+docker compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
+```
+
+**DDEV**
+```bash
+ddev exec php src/vendor/bin/phpcbf --standard=src/phpcs.xml
 ```
 
 ## Development Workflow
@@ -198,13 +223,27 @@ docker-compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
    ```
 
 2. **Enable the module**:
+
+   **Docker Compose**
    ```bash
-   docker-compose exec drupal drush pm:enable module_name
+   docker compose exec drupal drush pm:enable module_name
+   ```
+
+   **DDEV**
+   ```bash
+   ddev drush pm:enable module_name
    ```
 
 3. **Export configuration**:
+
+   **Docker Compose**
    ```bash
-   docker-compose exec drupal drush cex
+   docker compose exec drupal drush cex
+   ```
+
+   **DDEV**
+   ```bash
+   ddev drush cex
    ```
 
 ### Managing Configuration
@@ -231,16 +270,33 @@ docker-compose exec drupal vendor/bin/phpcbf --standard=./phpcs.xml
    - Clear Drupal cache: `drush cr`
    - Check for PHP memory limits
 
+4. **Port Conflicts**
+   - For docker compose, you may see `port is already allocated` errors
+   - If you are running DDEV, turn it off with `ddev poweroff`
+   - If you are running another app, turn it off with `docker compose -p app-name down`
+
 ### Logs
 
+**Docker Compose**
 View container logs:
 ```bash
-docker-compose logs -f drupal
+docker compose logs -f drupal
+```
+
+**DDEV**
+```bash
+ddev logs -f
 ```
 
 ### Accessing the Container
+**Docker Compose**
 ```bash
-docker-compose exec drupal bash
+docker compose exec drupal bash
+```
+
+**DDEV**
+```bash
+ddev ssh
 ```
 
 ## File Structure
@@ -271,7 +327,7 @@ app-drupal/
 2. Create a feature branch
 3. Make your changes
 4. Test with both local development and Quant Cloud deployment
-5. Run code standards: `./test-coding-standards.sh`
+5. See "Code Standards" section above for checking coding standards
 6. Submit a pull request
 
 ## License
