@@ -1,11 +1,15 @@
-# This workflow is used to build and test the Drupal image.
-# It creates the public, default images that can be deployed directly to Quant Cloud.
-# If you wish to customize, you can fork this repository, make modifications, and then
-# use the "build-deploy.yaml" workflow to build and push your own images to Quant Cloud.
+# This workflow builds and pushes public images to GitHub Container Registry.
+# It creates versioned tags for customers to pin to specific versions.
+#
+# Tags created:
+#   - latest              : Always the latest stable release (main branch)
+#   - develop             : Cutting edge development version
+#   - {major}.x-latest    : Latest within major version (e.g., 11.x-latest)
+#   - {major}.{minor}.x-latest : Latest within minor version (e.g., 11.1.x-latest)
+#   - {major}.{minor}.{patch}  : Exact version pin (e.g., 11.1.0)
 #
 # NOTE: This workflow only runs for the quantcdn-templates organization.
-# If you've forked this repo, this workflow will be skipped automatically.
-name: Build and Push Drupal to Public Registry
+name: Build and Push to Public Registry
 
 on:
   push:
@@ -14,80 +18,122 @@ on:
       - develop
     tags:
       - 'v*'
+  schedule:
+    # Run weekly on Sunday at midnight UTC to pick up security updates
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if no changes'
+        required: false
+        default: 'false'
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
     # Only run for quantcdn-templates organization
     if: github.repository_owner == 'quantcdn-templates'
     runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
-    
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build temp image for version detection
         uses: docker/build-push-action@v5
         with:
           context: .
           load: true
-          tags: drupal-temp:latest
+          tags: temp-version-check:latest
 
       - name: Detect Drupal version
         id: version
         run: |
           # Try to get Drupal version from the built container
-          if VERSION=$(docker run --rm drupal-temp:latest drush core-status --field=drupal-version --format=string 2>/dev/null); then
-            echo "Found Drupal version: $VERSION"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          else
-            # Fallback: try to parse from composer.json
-            if VERSION=$(docker run --rm drupal-temp:latest php -r "
-              \$composer = json_decode(file_get_contents('/opt/drupal/composer.json'), true);
-              if (isset(\$composer['require']['drupal/core-recommended'])) {
-                echo preg_replace('/[^0-9.]/', '', \$composer['require']['drupal/core-recommended']);
-              } else if (isset(\$composer['require']['drupal/core'])) {
-                echo preg_replace('/[^0-9.]/', '', \$composer['require']['drupal/core']);
-              }
-            " 2>/dev/null); then
-              echo "Found Drupal version from composer: $VERSION"
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-            else
-              echo "Could not detect Drupal version, using 'latest'"
-              echo "version=latest" >> $GITHUB_OUTPUT
-            fi
+          VERSION=$(docker run --rm temp-version-check:latest php -r "
+            \$composer = json_decode(file_get_contents('/opt/drupal/composer.json'), true);
+            if (isset(\$composer['require']['drupal/core-recommended'])) {
+              echo preg_replace('/[^0-9.]/', '', \$composer['require']['drupal/core-recommended']);
+            } else if (isset(\$composer['require']['drupal/core'])) {
+              echo preg_replace('/[^0-9.]/', '', \$composer['require']['drupal/core']);
+            } else {
+              echo '0.0.0';
+            }
+          " 2>/dev/null) || VERSION="0.0.0"
+
+          # Clean up version string
+          VERSION=$(echo "$VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+
+          if [ -z "$VERSION" ] || [ "$VERSION" = "0.0.0" ]; then
+            echo "Could not detect version, using timestamp-based version"
+            VERSION="1.0.$(date +%Y%m%d)"
           fi
 
-      - name: Set up image tags
+          echo "Detected version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Parse semantic version components
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+          echo "patch=$PATCH" >> $GITHUB_OUTPUT
+
+      - name: Generate image tags
         id: tags
         run: |
-          if [[ $GITHUB_REF == refs/heads/develop ]]; then
-            # Develop branch gets dev/edge tags
-            echo "tags<<EOF" >> $GITHUB_OUTPUT
-            echo "ghcr.io/quantcdn-templates/app-drupal:dev" >> $GITHUB_OUTPUT
-            echo "ghcr.io/quantcdn-templates/app-drupal:edge" >> $GITHUB_OUTPUT
-            echo "ghcr.io/quantcdn-templates/app-drupal:v${{ steps.version.outputs.version }}-dev" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            # Main branch gets latest and version tags
-            echo "tags<<EOF" >> $GITHUB_OUTPUT
-            echo "ghcr.io/quantcdn-templates/app-drupal:latest" >> $GITHUB_OUTPUT
-            echo "ghcr.io/quantcdn-templates/app-drupal:v${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          MAJOR="${{ steps.version.outputs.major }}"
+          MINOR="${{ steps.version.outputs.minor }}"
+
+          TAGS=""
+
+          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            # Develop branch tags
+            TAGS="${IMAGE}:develop"
+            TAGS="${TAGS},${IMAGE}:dev"
+            TAGS="${TAGS},${IMAGE}:edge"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Main branch or scheduled build tags
+            TAGS="${IMAGE}:latest"
+            TAGS="${TAGS},${IMAGE}:${VERSION}"
+            TAGS="${TAGS},${IMAGE}:${MAJOR}.x-latest"
+            TAGS="${TAGS},${IMAGE}:${MAJOR}.${MINOR}.x-latest"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # Git tag release
+            GIT_TAG="${{ github.ref_name }}"
+            TAGS="${IMAGE}:${GIT_TAG}"
+            TAGS="${TAGS},${IMAGE}:${GIT_TAG#v}"
           fi
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          echo "Generated tags: $TAGS"
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v5
@@ -96,27 +142,59 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.tags.outputs.tags }}
-          cache-from: |
-            type=gha
-            type=registry,ref=ghcr.io/quantcdn-templates/app-drupal:cache
-          cache-to: |
-            type=gha,mode=max
-            type=registry,ref=ghcr.io/quantcdn-templates/app-drupal:cache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.title=${{ github.event.repository.name }}
+            org.opencontainers.image.description=${{ github.event.repository.description }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Test container startup
         run: |
           echo "Testing container startup..."
-          timeout 60 docker run --rm -d --name test-drupal \
-            -e DB_HOST=example.com \
-            -e DB_DATABASE=test \
-            -e DB_USERNAME=user \
-            -e DB_PASSWORD=pass \
-            ghcr.io/quantcdn-templates/app-drupal:latest || true
-          
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+
+          # Start container in background
+          docker run -d --name test-container \
+            -e DB_HOST=localhost \
+            -e DB_DATABASE=drupal \
+            -e DB_USERNAME=drupal \
+            -e DB_PASSWORD=drupal \
+            -p 3099:80 \
+            "$IMAGE" || true
+
+          # Wait for startup
+          sleep 10
+
           # Check if container is running
-          if docker ps | grep test-drupal; then
-            echo "✅ Container started successfully"
-            docker stop test-drupal
+          if docker ps | grep test-container; then
+            echo "Container started successfully"
+
+            # Try to hit the health endpoint
+            if curl -sf http://localhost:3099/ > /dev/null 2>&1; then
+              echo "HTTP endpoint responding"
+            else
+              echo "HTTP endpoint not yet ready (database connection expected to fail in CI)"
+            fi
+
+            docker stop test-container
+            docker rm test-container
           else
-            echo "ℹ️ Container startup test completed (database connection expected to fail in CI)"
-          fi 
+            echo "Container exited (database connection expected to fail in CI)"
+            docker logs test-container 2>/dev/null || true
+            docker rm test-container 2>/dev/null || true
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Tags pushed:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.tags.outputs.tags }}" | tr ',' '\n' >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
