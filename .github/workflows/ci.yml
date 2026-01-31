@@ -84,8 +84,15 @@ jobs:
             }
           " 2>/dev/null) || VERSION="0.0.0"
 
-          # Clean up version string
-          VERSION=$(echo "$VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          # Clean up version string (handle both x.y.z and x.y formats)
+          RAW_VERSION="$VERSION"
+          VERSION=$(echo "$RAW_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          if [ -z "$VERSION" ]; then
+            VERSION=$(echo "$RAW_VERSION" | grep -oE '[0-9]+\.[0-9]+' | head -1)
+            if [ -n "$VERSION" ]; then
+              VERSION="${VERSION}.0"
+            fi
+          fi
 
           if [ -z "$VERSION" ] || [ "$VERSION" = "0.0.0" ]; then
             echo "Could not detect version, using timestamp-based version"
