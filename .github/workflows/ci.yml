@@ -72,16 +72,16 @@ jobs:
       - name: Detect Drupal version
         id: version
         run: |
-          # Try to get Drupal version from the built container
+          # Get actual installed Drupal version from composer.lock
           VERSION=$(docker run --rm temp-version-check:latest php -r "
-            \$composer = json_decode(file_get_contents('/opt/drupal/composer.json'), true);
-            if (isset(\$composer['require']['drupal/core-recommended'])) {
-              echo preg_replace('/[^0-9.]/', '', \$composer['require']['drupal/core-recommended']);
-            } else if (isset(\$composer['require']['drupal/core'])) {
-              echo preg_replace('/[^0-9.]/', '', \$composer['require']['drupal/core']);
-            } else {
-              echo '0.0.0';
+            \$lock = json_decode(file_get_contents('/opt/drupal/composer.lock'), true);
+            foreach (\$lock['packages'] ?? [] as \$pkg) {
+              if (\$pkg['name'] === 'drupal/core') {
+                echo preg_replace('/[^0-9.]/', '', \$pkg['version']);
+                exit;
+              }
             }
+            echo '0.0.0';
           " 2>/dev/null) || VERSION="0.0.0"
 
           # Clean up version string (handle both x.y.z and x.y formats)
