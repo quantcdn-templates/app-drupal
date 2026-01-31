@@ -1,6 +1,6 @@
 # Drupal Template for Quant Cloud
 
-[![Deploy to Quant Cloud](https://www.quantcdn.io/img/quant-deploy-btn-sml.svg)](https://dashboard.quantcdn.io/cloud-apps/create/starter-kit/app-drupal)
+[![Deploy to Quant Cloud](https://www.quantcdn.io/img/quant-deploy-btn-sml.svg)](https://dashboard.quantcdn.io/deploy/app/app-drupal)
 
 A production-ready Drupal template designed for deployment on Quant Cloud. This template uses a standard Drupal installation with intelligent environment variable mapping to support Quant Cloud's database configuration.
 

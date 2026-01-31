@@ -1,0 +1,8 @@
+
+# DDEV local files
+.ddev/traefik/
+.ddev/*.crt
+.ddev/*.key
+
+# Local Docker overrides
+.docker/quant/php.ini.d/
