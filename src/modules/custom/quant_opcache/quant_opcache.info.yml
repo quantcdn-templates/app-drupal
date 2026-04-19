@@ -1,0 +1,5 @@
+name: 'Quant OPcache'
+type: module
+description: 'Resets PHP OPcache on Drupal cache rebuilds so module/config changes take effect immediately on the current container. Installed and enabled automatically by the Quant container entrypoint.'
+package: 'Quant'
+core_version_requirement: ^10 || ^11
