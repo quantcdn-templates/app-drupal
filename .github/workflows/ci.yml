@@ -80,6 +80,7 @@ jobs:
         with:
           context: .
           load: true
+          pull: true
           tags: temp-version-check:latest
           build-args: |
             PHP_VERSION=${{ steps.base.outputs.php_version }}
@@ -163,6 +164,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          pull: true
           tags: ${{ steps.tags.outputs.tags }}
           build-args: |
             PHP_VERSION=${{ steps.base.outputs.php_version }}
