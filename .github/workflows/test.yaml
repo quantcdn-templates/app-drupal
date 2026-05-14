@@ -3,6 +3,9 @@ name: Test codebases
 on:
   - push
 
+permissions:
+  contents: read
+
 env:
   NODE_ENV: development
 
@@ -18,7 +21,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
         with:
           php-version: 8.3
           extensions: mysql, pgsql, gd, zip, opcache, redis, apcu
