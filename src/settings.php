@@ -872,8 +872,11 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
  *
  * Ensure the 'redis' module is enabled on your project if using Redis.
  */
+// No memory limit for CLI (drush deploy/cim, cron, migrations) — large
+// config imports can exceed any fixed cap. Web requests keep the limit
+// from the PHP_MEMORY_LIMIT environment variable.
 if (in_array(PHP_SAPI, array('cli', 'cli-server', 'phpdbg'))) {
-  ini_set('memory_limit', '512M');
+  ini_set('memory_limit', '-1');
 }
 
 // Only attempt Redis connection if explicitly enabled
