@@ -6,3 +6,9 @@
 
 # Local Docker overrides
 .docker/quant/php.ini.d/
+
+# Generated at build by composer post-install-cmd from src/settings.php (do NOT commit).
+# Committing these overrides the composer-generated copy via `COPY src/` in the Dockerfile.
+src/web/sites/default/settings.php
+src/web/sites/default/services.yml
+src/web/sites/default/redis-unavailable.services.yml

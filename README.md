@@ -155,6 +155,16 @@ Redis can significantly improve Drupal's performance by providing fast caching. 
 
 If Redis is not available or fails to connect, Drupal automatically falls back to database caching.
 
+> When a **managed Valkey cache** is attached to the app in Quant Cloud, the platform injects `REDIS_ENABLED=true` plus the `REDIS_HOST`/`REDIS_USER`/`REDIS_PASSWORD`/`REDIS_TLS`/`CACHE_PREFIX` variables automatically on deploy — no manual configuration needed. Without a cache attached, `REDIS_ENABLED` is unset and the app uses the database cache.
+
+## Configuration files (`settings.php`)
+
+`src/settings.php` is the **single source of truth** for Drupal configuration (trusted hosts, cache backend, database, etc.).
+
+It is copied to `web/sites/default/settings.php` **automatically by Composer** — the `post-install-cmd`/`post-update-cmd` hooks in `src/composer.json` run `copy('settings.php', 'web/sites/default/settings.php')` (likewise for `services.yml` and `redis-unavailable.services.yml`). The Docker build relies on this: it runs `composer install`, then `COPY src/ /opt/drupal/` overlays the source tree.
+
+**Never commit `web/sites/default/settings.php`** (it is git-ignored). A committed copy would be overlaid on top of the Composer-generated one by `COPY src/`, silently shipping a stale config — only edit `src/settings.php`, and let Composer regenerate the rest.
+
 ## Drush Support
 
 This template includes Drush (Drupal CLI) pre-installed and configured.
