@@ -10,6 +10,9 @@ WORKDIR /opt/drupal
 # Copy dependency files and required config files first (changes occasionally)
 COPY src/composer.json src/composer.lock* src/settings.php src/services.yml src/redis-unavailable.services.yml ./
 
+# Copy composer patches BEFORE install so cweagans/composer-patches can find + apply them.
+COPY src/patches ./patches
+
 # Install PHP dependencies (cached until composer files change)
 RUN set -eux; \
     export COMPOSER_HOME="$(mktemp -d)"; \
