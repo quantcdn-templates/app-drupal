@@ -910,7 +910,11 @@ if (getenv('REDIS_ENABLED') === 'true') {
       $settings['redis.connection']['password'] = $redis_auth;
     }
     // Per-environment isolation on the shared (per-application) cache.
-    $settings['cache_prefix']['default'] = getenv('CACHE_PREFIX') ?: '';
+    // ElastiCache Serverless (and any Redis Cluster) shards keys by hash slot, so multi-key
+    // ops (DEL/MGET/MSET of many keys) fail with CROSSSLOT unless the keys share a slot.
+    // Wrap the per-environment prefix in a Redis hash tag {…} so every key for this
+    // environment hashes to one slot. Environments stay isolated via distinct tag strings.
+    $settings['cache_prefix']['default'] = '{' . (getenv('CACHE_PREFIX') ?: 'drupal') . '}';
     // Give permanent items a TTL so ElastiCache Serverless can LRU-evict under the
     // storage cap instead of returning OOM (serverless evicts only entries with a TTL).
     foreach (['default','render','dynamic_page_cache','page','data','entity','discovery','config','menu','bootstrap'] as $bin) {
