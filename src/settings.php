@@ -880,7 +880,10 @@ if (in_array(PHP_SAPI, array('cli', 'cli-server', 'phpdbg'))) {
 }
 
 // Cache backend: managed Valkey/Redis when enabled, otherwise the database cache.
-if (getenv('REDIS_ENABLED') === 'true') {
+// Guard on the phpredis extension: `new \Redis()` throws a PHP Error (not an Exception,
+// so the try/catch below would miss it) when the extension isn't loaded — skip to the
+// database cache instead of fataling.
+if (getenv('REDIS_ENABLED') === 'true' && extension_loaded('redis')) {
   $redis_host = getenv('REDIS_HOST') ?: 'redis';
   $redis_port = getenv('REDIS_SERVICE_PORT') ?: 6379;
   $redis_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: 2;

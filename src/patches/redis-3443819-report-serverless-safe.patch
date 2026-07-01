@@ -1,0 +1,48 @@
+--- a/src/Controller/ReportController.php
++++ b/src/Controller/ReportController.php
+@@ -379,10 +379,10 @@
+       $info = $this->redis->info();
+     }
+ 
+-    $normalized_info['redis_version'] = $info['redis_version'] ?? $info['Server']['redis_version'];
++    $normalized_info['redis_version'] = $info['redis_version'] ?? $info['Server']['redis_version'] ?? 'unknown';
+     $normalized_info['valkey_version'] = $info['valkey_version'] ?? NULL;
+     $normalized_info['redis_mode'] = $info['redis_mode'] ?? $info['Server']['redis_mode'] ?? NULL;
+-    $normalized_info['connected_clients'] = $info['connected_clients'] ?? $info['Clients']['connected_clients'];
++    $normalized_info['connected_clients'] = $info['connected_clients'] ?? $info['Clients']['connected_clients'] ?? 0;
+     if ($this->redis instanceof \RedisCluster) {
+       $master = current($this->redis->_masters());
+       $normalized_info['db_size'] = $this->redis->dbSize($master);
+@@ -390,20 +390,26 @@
+     else {
+       $normalized_info['db_size'] = $this->redis->dbSize();
+     }
+-    $normalized_info['used_memory'] = $info['used_memory'] ?? $info['Memory']['used_memory'];
+-    $normalized_info['used_memory_human'] = $info['used_memory_human'] ?? $info['Memory']['used_memory_human'];
++    $normalized_info['used_memory'] = $info['used_memory'] ?? $info['Memory']['used_memory'] ?? 0;
++    $normalized_info['used_memory_human'] = $info['used_memory_human'] ?? $info['Memory']['used_memory_human'] ?? 'N/A';
+ 
+     if (empty($info['maxmemory_policy'])) {
+-      $memory_config = $this->redis->config('get', 'maxmemory*');
+-      $normalized_info['maxmemory_policy'] = $memory_config['maxmemory-policy'];
+-      $normalized_info['maxmemory'] = $memory_config['maxmemory'];
++      // Managed engines (e.g. AWS ElastiCache Serverless) disable the CONFIG command.
++      try {
++        $memory_config = $this->redis->config('get', 'maxmemory*');
++      }
++      catch (\Exception $e) {
++        $memory_config = [];
++      }
++      $normalized_info['maxmemory_policy'] = $memory_config['maxmemory-policy'] ?? '';
++      $normalized_info['maxmemory'] = $memory_config['maxmemory'] ?? 0;
+     }
+     else {
+       $normalized_info['maxmemory_policy'] = $info['maxmemory_policy'];
+       $normalized_info['maxmemory'] = $info['maxmemory'];
+     }
+ 
+-    $normalized_info['uptime_in_seconds'] = $info['uptime_in_seconds'] ?? $info['Server']['uptime_in_seconds'] ?? NULL;
++    $normalized_info['uptime_in_seconds'] = $info['uptime_in_seconds'] ?? $info['Server']['uptime_in_seconds'] ?? 0;
+     $normalized_info['total_net_output_bytes'] = $info['total_net_output_bytes'] ?? $info['Stats']['total_net_output_bytes'] ?? NULL;
+     $normalized_info['total_net_input_bytes'] = $info['total_net_input_bytes'] ?? $info['Stats']['total_net_input_bytes'] ?? NULL;
+     $normalized_info['total_commands_processed'] = $info['total_commands_processed'] ?? $info['Stats']['total_commands_processed'] ?? NULL;
