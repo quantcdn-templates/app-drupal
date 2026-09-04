@@ -38,9 +38,9 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ steps.init.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ steps.init.outputs.quant_application }}:app-${{ steps.init.outputs.image_suffix_clean }}
-          cache-from: type=gha,scope=app
-          cache-to: type=gha,mode=max,scope=app
+            ${{ steps.init.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ steps.init.outputs.quant_application }}:drupal-${{ steps.init.outputs.image_suffix_clean }}
+          cache-from: type=gha,scope=drupal
+          cache-to: type=gha,mode=max,scope=drupal
 
       - name: Create environment if it doesn't exist
         if: ${{ !startsWith(github.ref, 'refs/tags/') && steps.init.outputs.environment_exists == 'false' }}
