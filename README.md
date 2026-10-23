@@ -117,9 +117,9 @@ DDEV provides additional developer tools like Xdebug, Drush integration, Redis c
 
 | Feature | Local Development | Quant Cloud |
 |---------|------------------|-------------|
-| **Database** | MySQL container | Managed RDS |
+| **Database** | MySQL container | Managed database |
 | **Environment** | `docker-compose.override.yml` | Platform variables |
-| **Storage** | Local volumes | EFS persistent storage |
+| **Storage** | Local volumes | Shared filesystem persistent storage |
 | **Scaling** | Single container | Auto-scaling |
 | **Debug** | Available via settings | Production optimized |
 | **Redis Cache** | Optional (via override) | Optional (via env vars) |
@@ -320,7 +320,7 @@ app-drupal/
 ├── docker-compose.override.yml.example  # Local development overrides template
 ├── .github/
 │   └── workflows/
-│       ├── build-deploy.yaml            # Quant Cloud ECR deployment
+│       ├── build-deploy.yaml            # Quant Cloud container registry deployment
 │       ├── ci.yml                       # GitHub Container Registry (public)
 │       └── test.yaml                    # Code standards testing
 ├── src/                                 # Drupal codebase

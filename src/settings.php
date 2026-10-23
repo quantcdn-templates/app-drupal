@@ -101,7 +101,7 @@ $databases['default']['default'] = [
   'collation' => 'utf8mb4_general_ci',
 ];
 
-// Enable TLS/SSL for RDS database connections when certificate is available
+// Enable TLS/SSL for managed database connections when certificate is available
 // Can be disabled for local development with DISABLE_DB_TLS=true
 $rds_cert_path = '/opt/rds-ca-certs/rds-ca-cert-bundle.pem';
 if (getenv('DISABLE_DB_TLS') !== 'true' && file_exists($rds_cert_path)) {
@@ -913,12 +913,12 @@ if (getenv('REDIS_ENABLED') === 'true' && extension_loaded('redis')) {
       $settings['redis.connection']['password'] = $redis_auth;
     }
     // Per-environment isolation on the shared (per-application) cache.
-    // ElastiCache Serverless (and any Redis Cluster) shards keys by hash slot, so multi-key
+    // Managed cache services (and any Redis Cluster) shard keys by hash slot, so multi-key
     // ops (DEL/MGET/MSET of many keys) fail with CROSSSLOT unless the keys share a slot.
     // Wrap the per-environment prefix in a Redis hash tag {…} so every key for this
     // environment hashes to one slot. Environments stay isolated via distinct tag strings.
     $settings['cache_prefix']['default'] = '{' . (getenv('CACHE_PREFIX') ?: 'drupal') . '}';
-    // Give permanent items a TTL so ElastiCache Serverless can LRU-evict under the
+    // Give permanent items a TTL so managed cache services can LRU-evict under the
     // storage cap instead of returning OOM (serverless evicts only entries with a TTL).
     foreach (['default','render','dynamic_page_cache','page','data','entity','discovery','config','menu','bootstrap'] as $bin) {
       $settings['redis.settings']['perm_ttl_' . $bin] = '1 year';

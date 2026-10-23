@@ -20,6 +20,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -29,15 +32,15 @@ jobs:
         with:
           quant_organization: ${{ secrets.QUANT_ORGANIZATION }}
           quant_api_key: ${{ secrets.QUANT_API_KEY }}
-          quant_application: ${{ vars.QUANT_APPLICATION || 'templates' }}
-          environment_name_override: ${{ github.event.repository.name }}
+          quant_application: ${{ vars.QUANT_APPLICATION || github.event.repository.name }}
+          environment_name_override: ${{ vars.QUANT_ENVIRONMENT_OVERRIDE }}
           base_url: ${{ env.QUANT_BASE_URL }}
 
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: ${{ vars.BUILD_PLATFORM || 'linux/amd64' }}
+          platforms: ${{ vars.BUILD_PLATFORM || 'linux/arm64' }}
           push: true
           tags: |
             ${{ steps.init.outputs.stripped_endpoint }}/${{ secrets.QUANT_ORGANIZATION }}/${{ steps.init.outputs.quant_application }}:drupal-${{ steps.init.outputs.image_suffix_clean }}
@@ -45,7 +48,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=drupal
 
       - name: Translate docker-compose for Quant Cloud
-        uses: quantcdn/quant-cloud-compose-action@v1
+        uses: quantcdn/quant-cloud-compose-action@v4
         id: compose
         with:
           api_key: ${{ secrets.QUANT_API_KEY }}
@@ -77,11 +80,13 @@ jobs:
           base_url: ${{ env.QUANT_BASE_URL }}
 
       - name: Enable idle sleep
+        if: ${{ vars.QUANT_ENABLE_IDLE_SLEEP == 'true' }}
         env:
           QUANT_API_KEY: ${{ secrets.QUANT_API_KEY }}
           ORG: ${{ secrets.QUANT_ORGANIZATION }}
           APP: ${{ steps.init.outputs.quant_application }}
           ENVIRONMENT: ${{ steps.init.outputs.environment_name }}
+          ENV_EXISTS: ${{ steps.init.outputs.environment_exists }}
         run: |
           URL="$QUANT_BASE_URL/organizations/$ORG/applications/$APP/environments/$ENVIRONMENT"
           AUTH="Authorization: Bearer $QUANT_API_KEY"
@@ -89,15 +94,20 @@ jobs:
           # Environment creation is asynchronous. The record the idle-sleep
           # route binds to does not exist until creationStatus is completed.
           for i in $(seq 1 40); do
-            STATUS=$(curl -s -H "$AUTH" "$URL" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("creationStatus",""))' 2>/dev/null || echo "")
-            if [ "$STATUS" = "completed" ]; then
+            if [ "$ENV_EXISTS" = "true" ]; then
+              echo "Environment already existed; skipping the creation wait"
               break
             fi
-            echo "Waiting for environment ($i/40): creationStatus=${STATUS:-not found}"
+            RESP=$(curl -s -o env.json -w '%{http_code}' -H "$AUTH" "$URL")
+            STATUS=$(python3 -c 'import json; d=json.load(open("env.json")); print(d.get("creationStatus") or ("completed" if d.get("status")=="ACTIVE" else ""))' 2>/dev/null || echo "")
+            if [ "$RESP" = "200" ] && [ "$STATUS" = "completed" ]; then
+              break
+            fi
+            echo "Waiting for environment ($i/40): HTTP $RESP status=${STATUS:-not ready}"
             sleep 15
           done
-          if [ "$STATUS" != "completed" ]; then
-            echo "::error::Environment $ENVIRONMENT did not reach creationStatus=completed"
+          if [ "$ENV_EXISTS" != "true" ] && [ "$STATUS" != "completed" ]; then
+            echo "::error::Environment $ENVIRONMENT did not become ready (last HTTP $RESP)"
             exit 1
           fi
 

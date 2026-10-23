@@ -5,13 +5,13 @@
  * Quant OPcache module — resets PHP OPcache on Drupal cache rebuilds.
  *
  * OPcache is configured in the quant/app-apache-php base image with
- * revalidate_freq=3600 to minimise EFS metadata I/O. This module's
+ * revalidate_freq=3600 to minimise filesystem metadata I/O. This module's
  * hook_cache_flush() implementation ensures admin-driven changes
  * (module install/uninstall, config import, `drush cr`, etc.) invalidate
  * the bytecode cache immediately on the current container.
  *
  * Other containers in the same service re-sync within revalidate_freq.
- * For emergency propagation, force a new ECS deployment.
+ * For emergency propagation, force a new service deployment.
  */
 
 /**
