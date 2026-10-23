@@ -101,7 +101,7 @@ $databases['default']['default'] = [
   'collation' => 'utf8mb4_general_ci',
 ];
 
-// Enable TLS/SSL for RDS database connections when certificate is available
+// Enable TLS/SSL for managed database connections when certificate is available
 // Can be disabled for local development with DISABLE_DB_TLS=true
 $rds_cert_path = '/opt/rds-ca-certs/rds-ca-cert-bundle.pem';
 if (getenv('DISABLE_DB_TLS') !== 'true' && file_exists($rds_cert_path)) {
@@ -879,30 +879,50 @@ if (in_array(PHP_SAPI, array('cli', 'cli-server', 'phpdbg'))) {
   ini_set('memory_limit', '-1');
 }
 
-// Only attempt Redis connection if explicitly enabled
-if (getenv('REDIS_ENABLED') === 'true') {
-  $redis = new \Redis();
+// Cache backend: managed Valkey/Redis when enabled, otherwise the database cache.
+// Guard on the phpredis extension: `new \Redis()` throws a PHP Error (not an Exception,
+// so the try/catch below would miss it) when the extension isn't loaded — skip to the
+// database cache instead of fataling.
+if (getenv('REDIS_ENABLED') === 'true' && extension_loaded('redis')) {
   $redis_host = getenv('REDIS_HOST') ?: 'redis';
   $redis_port = getenv('REDIS_SERVICE_PORT') ?: 6379;
   $redis_timeout = getenv('REDIS_CONNECT_TIMEOUT') ?: 2;
+  $redis_conn_host = (getenv('REDIS_TLS') === '1' ? 'tls://' : '') . $redis_host;
+  $redis_user = getenv('REDIS_USER') ?: NULL;
+  $redis_password = getenv('REDIS_PASSWORD') ?: NULL;
+  // ACL (user+pass) → array form; legacy single password → string; none → NULL.
+  $redis_auth = ($redis_user && $redis_password) ? [$redis_user, $redis_password] : ($redis_password ?: NULL);
 
   try {
-    if (InstallerKernel::installationAttempted()) {
-      // Do not set the cache during installations of Drupal.
+    if (\Drupal\Core\Installer\InstallerKernel::installationAttempted()) {
       throw new \Exception('Drupal installation underway.');
     }
-
-    $redis->connect($redis_host, $redis_port, $redis_timeout);
-    $response = $redis->ping();
-
-    if (!$response) {
-      throw new \Exception('Redis could be reached but is not responding correctly.');
+    $redis = new \Redis();
+    $redis->connect($redis_conn_host, $redis_port, $redis_timeout);
+    if ($redis_auth !== NULL) {
+      $redis->auth($redis_auth);
+    }
+    if (!$redis->ping()) {
+      throw new \Exception('Redis reachable but not responding correctly.');
     }
 
     $settings['redis.connection']['interface'] = 'PhpRedis';
-    $settings['redis.connection']['host'] = $redis_host;
+    $settings['redis.connection']['host'] = $redis_conn_host;
     $settings['redis.connection']['port'] = $redis_port;
-    $settings['cache_prefix']['default'] = '';
+    if ($redis_auth !== NULL) {
+      $settings['redis.connection']['password'] = $redis_auth;
+    }
+    // Per-environment isolation on the shared (per-application) cache.
+    // Managed cache services (and any Redis Cluster) shard keys by hash slot, so multi-key
+    // ops (DEL/MGET/MSET of many keys) fail with CROSSSLOT unless the keys share a slot.
+    // Wrap the per-environment prefix in a Redis hash tag {…} so every key for this
+    // environment hashes to one slot. Environments stay isolated via distinct tag strings.
+    $settings['cache_prefix']['default'] = '{' . (getenv('CACHE_PREFIX') ?: 'drupal') . '}';
+    // Give permanent items a TTL so managed cache services can LRU-evict under the
+    // storage cap instead of returning OOM (serverless evicts only entries with a TTL).
+    foreach (['default','render','dynamic_page_cache','page','data','entity','discovery','config','menu','bootstrap'] as $bin) {
+      $settings['redis.settings']['perm_ttl_' . $bin] = '1 year';
+    }
 
     $settings['cache']['default'] = 'cache.backend.redis';
     $settings['container_yamls'][] = 'modules/contrib/redis/example.services.yml';
@@ -938,11 +958,12 @@ if (getenv('REDIS_ENABLED') === 'true') {
     ];
   }
   catch (\Exception $e) {
-    // Redis connection failed - fall back to default cache
+    // Cache unreachable → database cache (NEVER null).
     $settings['container_yamls'][] = "sites/default/redis-unavailable.services.yml";
     $settings['cache']['default'] = 'cache.backend.database';
   }
-} else {
-  // Redis not enabled - use database cache backend
+}
+else {
+  // No managed cache attached → database cache.
   $settings['cache']['default'] = 'cache.backend.database';
 }

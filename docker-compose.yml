@@ -1,6 +1,9 @@
+# Quant Cloud: run on ARM64 to match the arm64 images the org builds.
+x-quant-labels:
+  quant.architecture: ARM64
+
 services:
   drupal:
-    image: ghcr.io/quantcdn-templates/app-drupal:latest
     build: .
     ports:
      - "80:80"

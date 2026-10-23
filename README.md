@@ -117,9 +117,9 @@ DDEV provides additional developer tools like Xdebug, Drush integration, Redis c
 
 | Feature | Local Development | Quant Cloud |
 |---------|------------------|-------------|
-| **Database** | MySQL container | Managed RDS |
+| **Database** | MySQL container | Managed database |
 | **Environment** | `docker-compose.override.yml` | Platform variables |
-| **Storage** | Local volumes | EFS persistent storage |
+| **Storage** | Local volumes | Shared filesystem persistent storage |
 | **Scaling** | Single container | Auto-scaling |
 | **Debug** | Available via settings | Production optimized |
 | **Redis Cache** | Optional (via override) | Optional (via env vars) |
@@ -154,6 +154,16 @@ Redis can significantly improve Drupal's performance by providing fast caching. 
 3. **Install Redis module**: `composer require drupal/redis` and enable it
 
 If Redis is not available or fails to connect, Drupal automatically falls back to database caching.
+
+> When a **managed Valkey cache** is attached to the app in Quant Cloud, the platform injects `REDIS_ENABLED=true` plus the `REDIS_HOST`/`REDIS_USER`/`REDIS_PASSWORD`/`REDIS_TLS`/`CACHE_PREFIX` variables automatically on deploy — no manual configuration needed. Without a cache attached, `REDIS_ENABLED` is unset and the app uses the database cache.
+
+## Configuration files (`settings.php`)
+
+`src/settings.php` is the **single source of truth** for Drupal configuration (trusted hosts, cache backend, database, etc.).
+
+It is copied to `web/sites/default/settings.php` **automatically by Composer** — the `post-install-cmd`/`post-update-cmd` hooks in `src/composer.json` run `copy('settings.php', 'web/sites/default/settings.php')` (likewise for `services.yml` and `redis-unavailable.services.yml`). The Docker build relies on this: it runs `composer install`, then `COPY src/ /opt/drupal/` overlays the source tree.
+
+**Never commit `web/sites/default/settings.php`** (it is git-ignored). A committed copy would be overlaid on top of the Composer-generated one by `COPY src/`, silently shipping a stale config — only edit `src/settings.php`, and let Composer regenerate the rest.
 
 ## Drush Support
 
@@ -310,7 +320,7 @@ app-drupal/
 ├── docker-compose.override.yml.example  # Local development overrides template
 ├── .github/
 │   └── workflows/
-│       ├── build-deploy.yaml            # Quant Cloud ECR deployment
+│       ├── build-deploy.yaml            # Quant Cloud container registry deployment
 │       ├── ci.yml                       # GitHub Container Registry (public)
 │       └── test.yaml                    # Code standards testing
 ├── src/                                 # Drupal codebase
