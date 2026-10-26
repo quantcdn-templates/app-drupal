@@ -43,6 +43,7 @@ dev-php.ini
 # Drupal specific excludes
 src/web/sites/*/files/
 src/web/sites/*/private/
+src/private/
 src/web/sites/simpletest/
 
 # Temporary files

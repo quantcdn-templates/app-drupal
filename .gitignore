@@ -12,3 +12,6 @@
 src/web/sites/default/settings.php
 src/web/sites/default/services.yml
 src/web/sites/default/redis-unavailable.services.yml
+
+# Drupal private files (persistent volume on Quant Cloud; local DDEV writes here).
+src/private/

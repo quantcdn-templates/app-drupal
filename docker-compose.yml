@@ -9,6 +9,7 @@ services:
      - "80:80"
     volumes:
       - ./src/web/sites/default/files:/opt/drupal/web/sites/default/files
+      - drupal_private:/opt/drupal/private
     # Database environment variables will be provided by Quant Cloud
     # For local development, use docker-compose.override.yml
 
@@ -26,4 +27,6 @@ services:
       quant.type: none  # Don't deploy to Quant Cloud
 
 volumes:
+  # On Quant Cloud every named volume is persistent storage shared by all tasks.
+  drupal_private:
   mysql_data:

@@ -41,7 +41,10 @@ COPY src/ /opt/drupal/
 
 # Final setup that depends on source code
 RUN set -eux; \
-    chown -R www-data:www-data web/sites web/modules web/themes
+    chown -R www-data:www-data web/sites web/modules web/themes; \
+    mkdir -p /opt/drupal/private; \
+    chown www-data:www-data /opt/drupal/private; \
+    chmod 750 /opt/drupal/private
 
 # Set PATH
 ENV PATH=${PATH}:/opt/drupal/vendor/bin

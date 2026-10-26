@@ -119,7 +119,7 @@ DDEV provides additional developer tools like Xdebug, Drush integration, Redis c
 |---------|------------------|-------------|
 | **Database** | MySQL container | Managed database |
 | **Environment** | `docker-compose.override.yml` | Platform variables |
-| **Storage** | Local volumes | Shared filesystem persistent storage |
+| **Storage** | Local volumes | Shared filesystem persistent storage (public files + private files volumes) |
 | **Scaling** | Single container | Auto-scaling |
 | **Debug** | Available via settings | Production optimized |
 | **Redis Cache** | Optional (via override) | Optional (via env vars) |
@@ -140,6 +140,7 @@ These are automatically provided by Quant Cloud:
 - `DRUPAL_DEBUG` - Enable debug mode (default: `false`)
 - `REDIS_ENABLED` - Enable Redis caching (set to `"true"` to enable)
 - `REDIS_HOST` - Redis server host (default: `redis`)
+- `DRUPAL_PRIVATE_PATH` - Private files directory (default: `/opt/drupal/private`)
 
 The template automatically falls back to legacy `MARIADB_*` variables for backward compatibility.
 
@@ -156,6 +157,21 @@ Redis can significantly improve Drupal's performance by providing fast caching. 
 If Redis is not available or fails to connect, Drupal automatically falls back to database caching.
 
 > When a **managed Valkey cache** is attached to the app in Quant Cloud, the platform injects `REDIS_ENABLED=true` plus the `REDIS_HOST`/`REDIS_USER`/`REDIS_PASSWORD`/`REDIS_TLS`/`CACHE_PREFIX` variables automatically on deploy — no manual configuration needed. Without a cache attached, `REDIS_ENABLED` is unset and the app uses the database cache.
+
+## Private files
+
+The private file system (`private://`) lives at `/opt/drupal/private`. It sits outside the docroot (`/opt/drupal/web`), so Apache never serves it, and it does not rely on an `.htaccess` file.
+
+- **Persistent:** `docker-compose.yml` mounts the `drupal_private` volume at that path. It survives redeploys and is shared by every container in the environment.
+- **Writable:** volume files belong to UID/GID 1000, which is `www-data` in the base image.
+- **Configurable:** `src/settings.php` reads `DRUPAL_PRIVATE_PATH` and falls back to `/opt/drupal/private`. With Docker Compose, the `drupal_private` named volume holds the files locally too. With DDEV the default resolves to `src/private`, which is git-ignored.
+- **Backed up:** Quant Cloud filesystem backups include every volume on the environment, including this one.
+
+Never point `file_private_path` at a directory under `sites/default/files`. That is the public files directory.
+
+**Existing environments:** a new volume reaches an environment only when the compose file is deployed (this repo's `build-deploy.yaml` does that through `quant-cloud-compose-action`, or use the dashboard or API). A redeploy on its own does not add the volume. After the deploy, run `drush cr` so Drupal registers the `private://` stream wrapper.
+
+**Backups:** use Quant Cloud backups (dashboard **Backups**, `qc backup create`, or `quantcdn/quant-cloud-environment-backup-action` on a schedule) for the database and files. Do not schedule modules such as backup_migrate to write database dumps into `private://`: the dumps grow without limit and sit on the same storage as the site they protect.
 
 ## Configuration files (`settings.php`)
 
@@ -286,6 +302,11 @@ ddev exec php src/vendor/bin/phpcbf --standard=src/phpcs.xml
    - For docker compose, you may see `port is already allocated` errors
    - If you are running DDEV, turn it off with `ddev poweroff`
    - If you are running another app, turn it off with `docker compose -p app-name down`
+
+5. **`ERROR 2026 (HY000): TLS/SSL error: self-signed certificate in certificate chain` from `mysql`, `mysqldump` or Drush**
+   - The base image's MariaDB client verifies the server certificate by default, and the local MySQL container uses a self-signed one. Drupal itself (PDO) still connects.
+   - The override mounts `.docker/mysql-local.cnf` (`skip-ssl` for the CLI clients) and sets the `DRUSH_COMMAND_*_OPTIONS_EXTRA` variables (Drush passes its own `--defaults-file`). Copy both from `docker-compose.override.yml.example` if your override predates them.
+   - This is local only. On Quant Cloud the clients verify the managed database certificate.
 
 ### Logs
 

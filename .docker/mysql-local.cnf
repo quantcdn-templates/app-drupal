@@ -1,0 +1,5 @@
+# Mounted by docker-compose.override.yml only. Never bake into the Cloud image.
+# Local MySQL does not have a trusted TLS certificate. For direct clients;
+# Drush bypasses this file and uses separate options in the local override.
+[client]
+skip-ssl
