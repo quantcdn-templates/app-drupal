@@ -17,6 +17,8 @@ services:
     command: ["apache2-foreground"]
     
     volumes:
+      # Local CLI clients (Drush/mysql/mysqldump) do not read DISABLE_DB_TLS.
+      - ./.docker/mysql-local.cnf:/etc/mysql/conf.d/zz-local.cnf:ro
       # Mount entire src directory for local development
       - ./src:/opt/drupal
       # Mount dev PHP config to override production settings (zz- prefix ensures it loads last)
@@ -30,6 +32,10 @@ services:
       DB_USERNAME: drupal
       DB_PASSWORD: drupal
       DISABLE_DB_TLS: "true"
+      # Drush uses --defaults-file, bypassing normal MySQL client configuration.
+      DRUSH_COMMAND_SITE_INSTALL_OPTIONS_EXTRA: --skip-ssl
+      DRUSH_COMMAND_SQL_QUERY_OPTIONS_EXTRA: --skip-ssl
+      DRUSH_COMMAND_SQL_DUMP_OPTIONS_EXTRA_DUMP: --skip-ssl --no-tablespaces
       
       # Local development settings
       QUANT_ENV_TYPE: development

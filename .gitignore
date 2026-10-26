@@ -15,3 +15,7 @@ src/web/sites/default/redis-unavailable.services.yml
 
 # Drupal private files (persistent volume on Quant Cloud; local DDEV writes here).
 src/private/
+
+# Local agent planning notes (never commit)
+docs/plans/
+docs/superpowers/
