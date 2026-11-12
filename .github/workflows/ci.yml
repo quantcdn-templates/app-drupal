@@ -20,7 +20,7 @@ on:
       - 'v*'
   schedule:
     # Run daily at midnight UTC to pick up new framework releases
-    - cron: '0 0 * * *'
+    - cron: '37 3 * * *'
   workflow_dispatch:
     inputs:
       force_rebuild:
