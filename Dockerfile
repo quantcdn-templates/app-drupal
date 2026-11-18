@@ -13,7 +13,10 @@ COPY src/composer.json src/composer.lock* src/settings.php src/services.yml src/
 # Copy composer patches BEFORE install so cweagans/composer-patches can find + apply them.
 COPY src/patches ./patches
 
-# Install PHP dependencies (cached until composer files change)
+# Install PHP dependencies. There is no composer.lock, so each build must re-resolve to pick up
+# core security releases: CI passes a new COMPOSER_RESOLVE per run, which invalidates this layer
+# (a cached layer would republish the old drupal/core).
+ARG COMPOSER_RESOLVE=local
 RUN set -eux; \
     export COMPOSER_HOME="$(mktemp -d)"; \
     composer config apcu-autoloader true; \

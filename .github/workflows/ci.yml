@@ -84,6 +84,7 @@ jobs:
           tags: temp-version-check:latest
           build-args: |
             PHP_VERSION=${{ steps.base.outputs.php_version }}
+            COMPOSER_RESOLVE=${{ github.run_id }}
 
       - name: Detect Drupal version
         id: version
@@ -168,6 +169,7 @@ jobs:
           tags: ${{ steps.tags.outputs.tags }}
           build-args: |
             PHP_VERSION=${{ steps.base.outputs.php_version }}
+            COMPOSER_RESOLVE=${{ github.run_id }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           labels: |
