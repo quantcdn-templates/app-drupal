@@ -13,7 +13,7 @@ COPY src/composer.json src/composer.lock* src/settings.php src/services.yml src/
 # Copy composer patches BEFORE install so cweagans/composer-patches can find + apply them.
 COPY src/patches ./patches
 
-# Install PHP dependencies (cached until composer files change)
+# Install PHP dependencies from src/composer.lock (updated by Dependabot PRs; see .github/dependabot.yml).
 RUN set -eux; \
     export COMPOSER_HOME="$(mktemp -d)"; \
     composer config apcu-autoloader true; \
