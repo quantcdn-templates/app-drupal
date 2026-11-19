@@ -1,0 +1,29 @@
+# Auto-merge Dependabot patch and minor updates (operator decision 2026-11-19).
+# This only ENABLES auto-merge. GitHub merges when the required checks pass: pr-build, and
+# supply-chain/review, a commit status the maintenance agent posts after it audits the lockfile diff
+# (new packages, registry or integrity changes, install scripts, maintainer changes, malware advisories).
+# Majors and PRs from anyone else are left for a person.
+name: dependabot-automerge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-automerge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository_owner == 'quantcdn-templates'
+    runs-on: ubuntu-latest
+    steps:
+      - id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch and minor
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

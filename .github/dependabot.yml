@@ -1,9 +1,35 @@
+# Dependency updates for the template image (operator decision 2026-11-19).
+# - composer.lock is committed; the image installs exactly what it pins.
+# - Patch and minor updates auto-merge (.github/workflows/dependabot-automerge.yml) only after the
+#   pr-build check passes and the maintenance agent posts supply-chain/review success.
+# - cooldown: no version younger than 2 days (supply-chain buffer). Security updates are not delayed.
+# - Majors are opened but never auto-merged.
 version: 2
 updates:
-
   - package-ecosystem: "composer"
-    directory: "src"
+    directory: "/src"
+    target-branch: "main"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+      timezone: "Australia/Melbourne"
+    cooldown:
+      default-days: 2
     open-pull-requests-limit: 10
-    target-branch: "develop"
+    groups:
+      composer-minor-patch:
+        update-types: ["minor", "patch"]
+    labels: ["dependencies"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 2
+    groups:
+      actions:
+        patterns: ["*"]
+    labels: ["dependencies"]

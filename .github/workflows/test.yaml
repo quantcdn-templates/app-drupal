@@ -20,14 +20,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
-        with:
-          php-version: 8.3
-          extensions: mysql, pgsql, gd, zip, opcache, redis, apcu
-
-      - name: Install project dependencies
-        run: composer install --working-dir=./src --dev
-
-      - name: Validate code standards
-        run: ./src/vendor/bin/phpcs --standard=./src/phpcs.xml
+      # No third-party setup action (operator 2026-11-19): lint inside our own base image, the same PHP the
+      # template ships. Runs as the runner user so vendor/ in the checkout stays writable.
+      - name: Install project dependencies and validate code standards
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/composer \
+            -v "$PWD/src:/app" -w /app --entrypoint sh ghcr.io/quantcdn-templates/app-apache-php:8.4 \
+            -c 'composer install --dev --no-interaction && vendor/bin/phpcs --standard=phpcs.xml'
