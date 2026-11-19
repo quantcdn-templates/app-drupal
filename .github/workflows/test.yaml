@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ contains(fromJSON('["push","schedule","workflow_dispatch"]'), github.event_name) && vars.QUANT_RUNS_ON_X64 && fromJSON(vars.QUANT_RUNS_ON_X64) || 'ubuntu-latest' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # No third-party setup action (operator 2026-11-19): lint inside our own base image, the same PHP the
       # template ships. Runs as the runner user so vendor/ in the checkout stays writable.

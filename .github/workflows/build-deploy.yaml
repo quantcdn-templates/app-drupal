@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Initialize Quant Cloud
         uses: quantcdn/quant-cloud-init-action@v4
@@ -37,7 +37,7 @@ jobs:
 
       - name: Set up QEMU
         if: ${{ contains(steps.build-platform.outputs.platform, ',') || (runner.arch == 'X64' && steps.build-platform.outputs.platform != 'linux/amd64') || (runner.arch == 'ARM64' && steps.build-platform.outputs.platform != 'linux/arm64') }}
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
